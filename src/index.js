@@ -1,7 +1,10 @@
 import 'normalize.css';
+import FrameRatePrinter from './scripts/Systems/FrameRatePrinter';
 
 const entities = [];
-const systems = [];
+const systems = [
+    new FrameRatePrinter()
+];
 
 let lastTimestamp = 0;
 

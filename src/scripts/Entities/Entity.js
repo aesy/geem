@@ -5,7 +5,7 @@ export default class Entity {
 	}
 
 	getComponent(type) {
-        for (const component of components) {
+        for (const component of this.components) {
             if (component instanceof type) {
                 return component;
             }
@@ -25,7 +25,7 @@ export default class Entity {
 	}
 
 	hasComponent(type) {
-        for (const component of components) {
+        for (const component of this.components) {
             if (component instanceof type) {
                 return true;
             }
@@ -44,4 +44,3 @@ export default class Entity {
 		return true;
 	}
 }
-                                                       f

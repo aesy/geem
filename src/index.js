@@ -7,8 +7,9 @@ const systems = [
     new FrameRatePrinter()
 ];
 
+const { innerHeight, innerWidth } = window;
 const scene = new Scene();
-const camera = new OrthographicCamera(window.innerWidth / -10, window.innerWidth / 10, window.innerHeight / 10, window.innerHeight / -10, 0, 1000);
+const camera = new OrthographicCamera(innerWidth / -10, innerWidth / 10, innerHeight / 10, innerHeight / -10, 0, 1000);
 const renderer = new WebGLRenderer();
 
 const material = new MeshLambertMaterial({color: 0xFF00FF});
@@ -26,8 +27,8 @@ scene.add(light);
 scene.add(mesh);
 camera.position.z = 20;
 
-renderer.setClearColor(0xdddddd);
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x222222);
+renderer.setSize(innerWidth, innerHeight);
 document.body.appendChild(renderer.domElement);
 
 let lastTimestamp = 0;
@@ -41,10 +42,23 @@ function update(currentTimestamp) {
         system.update(dt, filteredEntities);
     }
 
-    mesh.position.x += 1;
-
     renderer.render(scene, camera);
+
     requestAnimationFrame(update);
 }
+
+function onResize() {
+    const { innerHeight, innerWidth } = window;
+
+    renderer.setSize(innerWidth, innerHeight);
+
+    camera.left = innerWidth / -10;
+    camera.right = innerWidth / 10;
+    camera.top = innerHeight / 10;
+    camera.bottom = innerHeight / -10;
+    camera.updateProjectionMatrix();
+}
+
+addEventListener('resize', onResize);
 
 requestAnimationFrame(update);

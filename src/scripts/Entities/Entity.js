@@ -1,15 +1,21 @@
 
 export default class Entity {
 	constructor() {
-		this.components = {};
+		this.components = [];
 	}
 
-	getComponent(component) {
-		return this.components[component.name];
+	getComponent(type) {
+        for (const component of components) {
+            if (component instanceof type) {
+                return component;
+            }
+        }
+
+		return null;
 	}
 
 	addComponent(component) {
-		this.components[component.name] = component;
+        this.components.push(component);
 	}
 
 	addComponents(...components) {
@@ -18,13 +24,19 @@ export default class Entity {
 		}
 	}
 
-	hasComponent(component) {
-		return !!this.components[component.name];
+	hasComponent(type) {
+        for (const component of components) {
+            if (component instanceof type) {
+                return true;
+            }
+        }
+
+        return false;
 	}
 
-	hasComponents(...components) {
-		for (const component of components) {
-			if (!this.hasComponent(component)) {
+	hasComponents(...types) {
+		for (const type of types) {
+			if (!this.hasComponent(type)) {
 				return false;
 			}
 		}

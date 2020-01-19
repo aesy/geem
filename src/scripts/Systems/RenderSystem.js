@@ -9,9 +9,12 @@ export default class RenderSystem extends System {
         this.scene = new Scene();
         this.renderer = new WebGLRenderer();
         this.camera = new OrthographicCamera(innerWidth / -10, innerWidth / 10, innerHeight / 10, innerHeight / -10, 0, 1000);
+        this.camera.rotation.x = Math.PI / -4;
+        this.camera.position.z = 20;
         this.renderer.setClearColor(0x222222);
         this.renderer.setSize(innerWidth, innerHeight);
         document.body.appendChild(this.renderer.domElement);
+
 
         addEventListener('resize', this.onResize.bind(this));
     }

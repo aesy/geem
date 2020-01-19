@@ -1,17 +1,14 @@
 import Entity from './Entity';
-import { MeshPhysicalMaterial, SphereGeometry, Mesh } from 'three'; 
+import { MeshPhysicalMaterial, SphereGeometry, Mesh } from 'three';
 
 export default class Example extends Entity {
-    constructor(){
+    constructor() {
         super();
-        const geometry = new SphereGeometry(5, 32, 32);
-        const material = new MeshPhysicalMaterial({color: 0xFF00FF});
 
+        const material = new MeshPhysicalMaterial({ color: 0xFF00FF });
+        const geometry = new SphereGeometry(5, 32, 32);
         const mesh = new Mesh(geometry, material);
 
-        this.components = [
-            mesh,
-        ];
+        this.addComponents(mesh);
     }
 }
-

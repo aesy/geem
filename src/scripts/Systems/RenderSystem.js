@@ -22,8 +22,12 @@ export default class RenderSystem extends System {
 
     update(dt, entities) {
         for (const entity of entities) {
-            this.renderer.render(this.scene, this.camera);
+            const object = entity.getComponent(Object3D);
+
+            this.scene.add(object);
         }
+
+        this.renderer.render(this.scene, this.camera);
     }
 
     onResize() {

@@ -1,4 +1,5 @@
 import 'normalize.css';
+import './assets/styles/index.scss';
 import FrameRatePrinter from './scripts/Systems/FrameRatePrinter';
 import { Scene, OrthographicCamera, WebGLRenderer, MeshLambertMaterial, SphereGeometry, Mesh, PointLight } from 'three';
 

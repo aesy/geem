@@ -8,7 +8,7 @@ export default class Horse extends Entity {
         super();
 
         const geometry = new CylinderGeometry(5, 5, 20, 32);
-        const material = new MeshPhysicalMaterial({ color: 0xff0000});
+        const material = new MeshPhysicalMaterial({color: 0xff0000});
         const mesh = new Mesh(geometry, material);
 
         this.components = [

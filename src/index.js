@@ -1,16 +1,14 @@
 import 'normalize.css';
 import './assets/styles/index.scss';
-import Example from './scripts/Entities/Example';
 import Game from './scripts/Game/Game';
 import FloatSystem from './scripts/Systems/FloatSystem';
 import RenderSystem from './scripts/Systems/RenderSystem';
 import FrameRatePrinter from './scripts/Systems/FrameRatePrinter';
-import Horse from './scripts/Entities/Horse';
 import PointLight from './scripts/Entities/PointLight';
 import GrassTile from './scripts/Entities/GrassTile';
 import RotateSystem from './scripts/Systems/RotateSystem';
 import Grid from './scripts/Entities/Grid';
-import WaterTile from './scripts/Entities/WaterTile';
+import { generateWorld } from './scripts/WorldGen/WaterWorld';
 
 const game = new Game();
 game.addSystem(new RenderSystem());
@@ -22,17 +20,10 @@ game.addEntity(new GrassTile(1, 0, 1));
 game.addEntity(new GrassTile(1, 0, 2));
 game.addEntity(new GrassTile(2, 0, 1));
 game.addEntity(new GrassTile(2, 0, 2));
-game.addEntity(new WaterTile(0, 0, 0));
-game.addEntity(new WaterTile(1, 0, 0));
-game.addEntity(new WaterTile(2, 0, 0));
-game.addEntity(new WaterTile(3, 0, 0));
-game.addEntity(new WaterTile(3, 0, 1));
-game.addEntity(new WaterTile(3, 0, 2));
-game.addEntity(new WaterTile(3, 0, 3));
-game.addEntity(new WaterTile(0, 0, 1));
-game.addEntity(new WaterTile(0, 0, 2));
-game.addEntity(new WaterTile(0, 0, 3));
-game.addEntity(new WaterTile(0, 0, 3));
-game.addEntity(new WaterTile(0, 0, 3));
 game.addEntity(new PointLight());
+
+for (const waterTile of generateWorld(10, 10)) {
+    game.addEntity(waterTile);
+}
+
 game.start();

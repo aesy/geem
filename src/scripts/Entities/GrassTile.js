@@ -1,12 +1,8 @@
 import { BoxGeometry, MeshPhysicalMaterial, Mesh, MeshBasicMaterial } from 'three';
-import Entity from './Entity';
-import Rotate from '../Components/Rotate';
+import Tile from './Tile';
 
-export default class GrassTile extends Entity {
-    constructor() {
-        super();
-
-        const geometry = new BoxGeometry(10, 10, 10);
+export default class GrassTile extends Tile {
+    constructor(x, y, z) {
         const topMaterial = new MeshBasicMaterial({color: 0x8cba51});
         const otherMaterial = new MeshBasicMaterial({color: 0xe08f62});
         const materials = [
@@ -17,8 +13,6 @@ export default class GrassTile extends Entity {
             otherMaterial,
             otherMaterial
         ];
-        const mesh = new Mesh(geometry, materials);
-
-        this.addComponents(mesh, new Rotate(1, 1, 1));
+        super(x, y, z, materials);
     }
 }

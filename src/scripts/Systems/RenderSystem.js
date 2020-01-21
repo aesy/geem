@@ -7,11 +7,11 @@ export default class RenderSystem extends System {
         const { innerHeight, innerWidth } = window;
 
         this.scene = new Scene();
-        this.renderer = new WebGLRenderer();
+        this.renderer = new WebGLRenderer({antialias: true});
         this.camera = new OrthographicCamera(innerWidth / -10, innerWidth / 10, innerHeight / 10, innerHeight / -10, 0, 1000);
-        this.camera.position.x = Math.PI * -4;
-        this.camera.position.z = Math.PI * 4;
-        this.camera.position.y = Math.PI * 4;
+        this.camera.position.x = Math.PI * 24;
+        this.camera.position.z = Math.PI * 24;
+        this.camera.position.y = Math.PI * 24;
         this.camera.lookAt(0, 0, 0);
         this.renderer.setClearColor(0x222222);
         this.renderer.setSize(innerWidth, innerHeight);

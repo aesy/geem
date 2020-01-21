@@ -1,10 +1,12 @@
 
 export default class System {
 	appliesTo(entity) {
-		throw new Error('Not implemented');
+		return false;
 	}
 
-	update(dt, entities) {
+    initialize(events) {}
+
+	update(dt, entities, events) {
 		throw new Error('Not implemented');
 	}
 }

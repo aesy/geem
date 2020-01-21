@@ -1,16 +1,22 @@
+import EntityAdded from '../Event/EntityAdded';
+import EventBus from '../Event/EventBus';
+
 export default class Game {
     constructor() {
         this.entities = [];
         this.systems = [];
         this.lastTimestamp = 0;
+        this.events = new EventBus();
     }
 
     addSystem(system) {
         this.systems.push(system);
+        system.initialize(this.events);
     }
 
     addEntity(entity) {
         this.entities.push(entity);
+        this.events.emit(new EntityAdded(entity));
     }
 
     start() {
@@ -24,7 +30,7 @@ export default class Game {
         for (const system of this.systems) {
             const filteredEntities = this.entities.filter(system.appliesTo);
 
-            system.update(dt, filteredEntities);
+            system.update(dt, filteredEntities, this.events);
         }
 
         requestAnimationFrame(this.update.bind(this));

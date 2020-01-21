@@ -7,6 +7,6 @@ export default class WaterTile extends Tile {
         const materials = new MeshBasicMaterial({color: 0x3282b8});
         super(x, y, z, materials);
 
-        this.addComponents(new Floaty(1, 0.008));
+        this.addComponents(new Floaty(3, 3));
     }
 }

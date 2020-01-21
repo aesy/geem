@@ -13,7 +13,7 @@ export default class FloatSystem extends System {
             const object = entity.getComponent(Object3D);
 
             floaty.currentOffset += floaty.speed * dt;
-            object.position.y += Math.sin(floaty.currentOffset) * floaty.maxOffset / 2;
+            object.position.y += Math.sin(floaty.currentOffset) * floaty.maxOffset / 2 * dt;
         }
     }
 }

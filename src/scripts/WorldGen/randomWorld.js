@@ -1,3 +1,4 @@
+import GrassTile from '../Entities/GrassTile';
 import WaterTile from '../Entities/WaterTile';
 
 export function generateWorld(width, height) {
@@ -5,7 +6,11 @@ export function generateWorld(width, height) {
 
     for (let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
-            result.push(new WaterTile(x, 0, y));
+            if (Math.random() >= .5) {
+                result.push(new WaterTile(x, 0, y));
+            } else {
+                result.push(new GrassTile(x, 0, y));
+            }
         }
     }
 

@@ -12,8 +12,15 @@ export default class FloatSystem extends System {
             const floaty = entity.getComponent(Floaty);
             const object = entity.getComponent(Object3D);
 
-            floaty.currentOffset += floaty.speed * dt;
-            object.position.y += Math.sin(floaty.currentOffset) * floaty.maxOffset / 2 * dt;
+            if (floaty.currentOffset <= Math.min(0, floaty.maxOffset)) {
+                floaty.direction = 1;
+            } else if (floaty.currentOffset >= Math.max(0, floaty.maxOffset)) {
+                floaty.direction = -1;
+            }
+
+            const movement = floaty.direction * floaty.speed * dt;
+            floaty.currentOffset += movement;
+            object.position.y += movement;
         }
     }
 }

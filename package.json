@@ -33,7 +33,6 @@
     "dependencies": {
         "normalize.css": "^8.0.1",
         "open-simplex-noise": "^2.2.0",
-        "p5": "^0.10.2",
         "three": "^0.112.1",
         "three-orbitcontrols": "^2.110.3"
     }

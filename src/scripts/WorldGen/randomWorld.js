@@ -10,18 +10,20 @@ export function generateWorld(width, height, frequency, amplitude, seed ) {
     for (let z = 0; z < height; z++) {
         zOff = 0;
         for (let x = 0; x < width; x++) {
-            let r = noise2D(zOff * frequency, xOff * frequency) * amplitude;
+            let r = amplitude * noise2D(zOff * frequency, xOff * frequency)
+                + noise2D(zOff * frequency * 2, xOff * frequency * 2)
+                + noise2D(zOff * frequency * 4, xOff * frequency * 4);
             result.push(new GrassTile(x, Math.round(r), z));
             zOff += 0.1;
         }
         xOff += 0.1;
     }
 
-    for (let z = 0; z < height; z++) {
-        for (let x = 0; x < width; x++) {
-            result.push(new WaterTile(x, 0, z));
-        }
-    }
+    // for (let z = 0; z < height; z++) {
+    //     for (let x = 0; x < width; x++) {
+    //         result.push(new WaterTile(x, 0, z));
+    //     }
+    // }
 
     return result;
 }

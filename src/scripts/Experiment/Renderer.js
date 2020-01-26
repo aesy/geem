@@ -1,4 +1,4 @@
-import { Scene, WebGLRenderer, PerspectiveCamera } from 'three';
+import { Scene, WebGLRenderer, PerspectiveCamera, PCFSoftShadowMap } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 export default class Renderer {
@@ -8,8 +8,11 @@ export default class Renderer {
         const scene = new Scene();
 
         const renderer = new WebGLRenderer({ antialias: true });
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = PCFSoftShadowMap;
         renderer.setClearColor(0x5D95A9);
         renderer.setSize(innerWidth, innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
         addEventListener('resize', this.onResize.bind(this));
 

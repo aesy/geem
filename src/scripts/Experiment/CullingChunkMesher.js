@@ -7,9 +7,6 @@ const textureWidth = 256;
 
 export default class CullingChunkMesher {
     createGeometry(chunk) {
-        const xOffset = chunk.x * chunk.width;
-        const yOffset = chunk.y * chunk.height;
-        const zOffset = chunk.z * chunk.depth;
         const vertices = [];
         const normals = [];
         const uvs = [];
@@ -18,15 +15,14 @@ export default class CullingChunkMesher {
         for (let x = 0; x < chunk.width; x++) {
             for (let y = 0; y < chunk.height; y++) {
                 for (let z = 0; z < chunk.depth; z++) {
-                    const block = chunk.world.getBlock(x + xOffset, y + yOffset, z + zOffset);
+                    const block = chunk.getBlock(x, y, z);
 
                     if (block.type === Block.Type.AIR) {
                         continue;
                     }
 
                     for (const direction of Direction.all()) {
-                        const neighbor = chunk.world.getBlock(
-                            block.x + direction.x, block.y + direction.y, block.z + direction.z);
+                        const neighbor = chunk.getBlock(x + direction.x, y + direction.y, z + direction.z);
                         const neighborIsSameType = block.type === neighbor.type;
 
                         if (!Block.isOpaque(neighbor) && !neighborIsSameType) {

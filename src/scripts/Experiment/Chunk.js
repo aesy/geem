@@ -30,6 +30,14 @@ export default class Chunk {
         return World.CHUNK_SIZE;
     }
 
+    getBlock(x, y, z) {
+        const xOffset = this.x * this.width;
+        const yOffset = this.y * this.height;
+        const zOffset = this.z * this.depth;
+
+        return this.world.getBlock(x + xOffset, y + yOffset, z + zOffset);
+    }
+
     getMesh() {
         if (this.mesh === null) {
             const geometry = new CullingChunkMesher().createGeometry(this);

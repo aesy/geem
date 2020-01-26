@@ -1,5 +1,4 @@
 const path = require('path');
-const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -16,9 +15,9 @@ module.exports = {
     },
     resolve: {
         modules: [
-	        path.join(process.cwd(), 'src', 'scripts'),
-	        path.join(process.cwd(), 'src', 'assets'),
-	        path.join(process.cwd(), 'node_modules'),
+            path.join(process.cwd(), 'src', 'scripts'),
+            path.join(process.cwd(), 'src', 'assets'),
+            path.join(process.cwd(), 'node_modules')
         ]
     },
     module: {
@@ -33,10 +32,7 @@ module.exports = {
             }, {
                 test: /\.js$/,
                 use: {
-                    loader: 'babel-loader',
-                    options: {
-                        presets: ['@babel/preset-env']
-                    }
+                    loader: 'babel-loader'
                 }
             }, {
                 test: /\.html$/,
@@ -44,7 +40,7 @@ module.exports = {
                     {
                         loader: 'html-loader',
                         options: {
-                            attrs: [':src']
+                            attrs: [ ':src' ]
                         }
                     }
                 ]
@@ -79,7 +75,7 @@ module.exports = {
         ]
     },
     plugins: [
-        new CleanWebpackPlugin(['dist'], { root: process.cwd() }),
+        new CleanWebpackPlugin([ 'dist' ], { root: process.cwd() }),
         new MiniCssExtractPlugin({ filename: 'styles.css' }),
         new HtmlWebpackPlugin({
             template: 'index.html',

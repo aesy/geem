@@ -1,8 +1,13 @@
 import 'normalize.css';
 import './assets/styles/index.scss';
-import { DirectionalLight, LineBasicMaterial, LineSegments, WireframeGeometry } from 'three';
-import Renderer from './scripts/Renderer';
-import World from './scripts/World';
+import {
+    DirectionalLight,
+    LineBasicMaterial,
+    LineSegments,
+    WireframeGeometry
+} from 'three';
+import Renderer from './scripts/Experiment/Renderer';
+import World from './scripts/Experiment/World';
 
 const drawDistance = 5;
 const world = new World();
@@ -16,10 +21,10 @@ const light = new DirectionalLight(0xFFFFFF, 1);
 light.position.set(-1, 2, 4);
 renderer.scene.add(light);
 
-for (let chunkX = 0; chunkX < drawDistance; chunkX++) {
-    for (let chunkZ = 0; chunkZ < drawDistance; chunkZ++) {
-        const chunk = world.getChunk(chunkX, 0, chunkZ);
-        const mesh = world.generateMesh(chunk);
+for (let x = 0; x < drawDistance; x++) {
+    for (let z = 0; z < drawDistance; z++) {
+        const chunk = world.getChunk(x, 0, z);
+        const mesh = chunk.getMesh();
         renderer.scene.add(mesh);
 
         const wireframe = new LineSegments(

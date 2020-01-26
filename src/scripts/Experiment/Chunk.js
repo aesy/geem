@@ -7,7 +7,7 @@ const loader = new TextureLoader();
 const texture = loader.load(textureAtlas);
 texture.magFilter = NearestFilter;
 texture.minFilter = NearestFilter;
-const material = new MeshLambertMaterial({ map: texture });
+const material = new MeshLambertMaterial({ map: texture, transparent: true });
 
 export default class Chunk {
     constructor(x, y, z, world) {

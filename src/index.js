@@ -44,20 +44,25 @@ const referenceBox = new Mesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial({ 
 referenceBox.position.y += 0.5;
 renderer.scene.add(referenceBox);
 
-for (let x = 0; x < drawDistance; x++) {
-    for (let z = 0; z < drawDistance; z++) {
-        const chunk = world.getChunk(x, 0, z);
-        const mesh = chunk.getMesh();
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        renderer.scene.add(mesh);
+setTimeout(() => {
+    for (let x = 0; x < drawDistance; x++) {
+        for (let z = 0; z < drawDistance; z++) {
+            const chunk = world.getChunk(x, 0, z);
 
-        const wireframe = new LineSegments(
-            new WireframeGeometry(mesh.geometry),
-            new LineBasicMaterial({ color: 0x555555, linewidth: 1 }));
-        mesh.add(wireframe);
+            setTimeout(() => {
+                const mesh = chunk.getMesh();
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                renderer.scene.add(mesh);
+
+                const wireframe = new LineSegments(
+                    new WireframeGeometry(mesh.geometry),
+                    new LineBasicMaterial({ color: 0x555555, linewidth: 1 }));
+                mesh.add(wireframe);
+            }, 0);
+        }
     }
-}
+}, 0);
 
 function render() {
     renderer.update();

@@ -1,6 +1,7 @@
 import textureAtlas from '../../assets/images/textureAtlas.png';
 import { Mesh, MeshLambertMaterial, NearestFilter, TextureLoader } from 'three';
 import CullingChunkMesher from './CullingChunkMesher';
+import GreedyChunkMesher from './GreedyChunkMesher';
 import World from './World';
 
 const loader = new TextureLoader();

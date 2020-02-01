@@ -1,14 +1,5 @@
-import textureAtlas from '../../assets/images/textureAtlas.png';
-import { Mesh, MeshLambertMaterial, NearestFilter, TextureLoader } from 'three';
 import CullingChunkMesher from './CullingChunkMesher';
-import GreedyChunkMesher from './GreedyChunkMesher';
 import World from './World';
-
-const loader = new TextureLoader();
-const texture = loader.load(textureAtlas);
-texture.magFilter = NearestFilter;
-texture.minFilter = NearestFilter;
-const material = new MeshLambertMaterial({ map: texture, transparent: true });
 
 export default class Chunk {
     constructor(x, y, z, world) {
@@ -17,33 +8,48 @@ export default class Chunk {
         this.z = z;
         this.world = world;
         this.mesh = null;
+        this.data = new Array(World.CHUNK_SIZE * World.CHUNK_SIZE * World.CHUNK_SIZE);
+
+        const xOffset = x * World.CHUNK_SIZE;
+        const yOffset = y * World.CHUNK_SIZE;
+        const zOffset = z * World.CHUNK_SIZE;
+
+        for (let x = 0; x < World.CHUNK_SIZE; x++) {
+            for (let y = 0; y < World.CHUNK_SIZE; y++) {
+                for (let z = 0; z < World.CHUNK_SIZE; z++) {
+                    const block = this.world.getBlock(x + xOffset, y + yOffset, z + zOffset);
+
+                    this.data[ x + y * World.CHUNK_SIZE + z * World.CHUNK_SIZE * World.CHUNK_SIZE ] = block;
+                }
+            }
+        }
     }
 
-    get width() {
-        return World.CHUNK_SIZE;
-    }
+    setBlock(x, y, z, type) {
+        const xOffset = this.x * World.CHUNK_SIZE;
+        const yOffset = this.y * World.CHUNK_SIZE;
+        const zOffset = this.z * World.CHUNK_SIZE;
+        const block = { x: xOffset + x, y: yOffset + y, z: zOffset + z, type };
 
-    get height() {
-        return World.CHUNK_SIZE;
-    }
-
-    get depth() {
-        return World.CHUNK_SIZE;
+        this.data[ x + y * World.CHUNK_SIZE + z * World.CHUNK_SIZE * World.CHUNK_SIZE ] = block;
+        this.mesh = null;
     }
 
     getBlock(x, y, z) {
-        const xOffset = this.x * this.width;
-        const yOffset = this.y * this.height;
-        const zOffset = this.z * this.depth;
+        if (x < 0 || x >= World.CHUNK_SIZE || y < 0 || y >= World.CHUNK_SIZE || z < 0 || z >= World.CHUNK_SIZE) {
+            const xOffset = this.x * World.CHUNK_SIZE;
+            const yOffset = this.y * World.CHUNK_SIZE;
+            const zOffset = this.z * World.CHUNK_SIZE;
 
-        return this.world.getBlock(x + xOffset, y + yOffset, z + zOffset);
+            return this.world.getBlock(x + xOffset, y + yOffset, z + zOffset);
+        }
+
+        return this.data[ x + y * World.CHUNK_SIZE + z * World.CHUNK_SIZE * World.CHUNK_SIZE ];
     }
 
     getMesh() {
         if (this.mesh === null) {
-            const geometry = new CullingChunkMesher().createGeometry(this);
-
-            this.mesh = new Mesh(geometry, material);
+            this.mesh = new CullingChunkMesher().createMesh(this);
         }
 
         return this.mesh;

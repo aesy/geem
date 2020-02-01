@@ -1,20 +1,37 @@
-import { BufferAttribute, BufferGeometry } from 'three';
+import {
+    BufferAttribute,
+    BufferGeometry,
+    Mesh,
+    MeshLambertMaterial,
+    NearestFilter,
+    RepeatWrapping,
+    TextureLoader
+} from 'three';
+import textureAtlas from '../../assets/images/textureAtlas.png';
 import { Block } from './Block';
 import { Direction } from './Direction';
+import World from './World';
 
+const loader = new TextureLoader();
+const texture = loader.load(textureAtlas);
+texture.wrapS = RepeatWrapping;
+texture.wrapT = RepeatWrapping;
+texture.magFilter = NearestFilter;
+texture.minFilter = NearestFilter;
+const material = new MeshLambertMaterial({ map: texture, transparent: true });
 const tileWidth = 16;
 const textureWidth = 256;
 
 export default class CullingChunkMesher {
-    createGeometry(chunk) {
+    createMesh(chunk) {
         const vertices = [];
         const normals = [];
         const uvs = [];
         const indices = [];
 
-        for (let x = 0; x < chunk.width; x++) {
-            for (let y = 0; y < chunk.height; y++) {
-                for (let z = 0; z < chunk.depth; z++) {
+        for (let x = 0; x < World.CHUNK_SIZE; x++) {
+            for (let y = 0; y < World.CHUNK_SIZE; y++) {
+                for (let z = 0; z < World.CHUNK_SIZE; z++) {
                     const block = chunk.getBlock(x, y, z);
 
                     if (block.type === Block.Type.AIR) {
@@ -56,7 +73,7 @@ export default class CullingChunkMesher {
         geometry.setAttribute('uv', new BufferAttribute(new Float32Array(uvs), 2));
         geometry.setIndex(indices);
 
-        return geometry;
+        return new Mesh(geometry, material);
     }
 }
 

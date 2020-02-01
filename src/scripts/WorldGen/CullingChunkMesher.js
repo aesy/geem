@@ -8,8 +8,8 @@ import {
     TextureLoader
 } from 'three';
 import textureAtlas from '../../assets/images/textureAtlas.png';
+import { Direction } from '../Util/Direction';
 import { Block } from './Block';
-import { Direction } from './Direction';
 import World from './World';
 
 const loader = new TextureLoader();

@@ -3,7 +3,7 @@ import { Block } from './Block';
 import Chunk from './Chunk';
 
 const noise = makeNoise2D(Math.random() * Number.MAX_SAFE_INTEGER);
-const amplitude = 25;
+const amplitude = 40;
 const frequency = 2;
 
 export default class World {
@@ -45,8 +45,16 @@ export default class World {
         const layer3 = 0.25 * noise(zOffset * frequency * 4, xOffset * frequency * 4);
         const limit = amplitude * ((layer1 + layer2 + layer3) + 1) / 2;
 
-        if (y <= Math.round(limit)) {
+        const isGround = y <= Math.round(limit);
+
+        if (isGround && y > 30) {
+            block.type = Block.Type.SNOW;
+        } else if (isGround && y > 20) {
+            block.type = Block.Type.STONE;
+        } else if (isGround && y > 11) {
             block.type = Block.Type.DIRT;
+        } else if (isGround && y <= 11) {
+            block.type = Block.Type.SAND;
         } else if (y <= 10) {
             block.type = Block.Type.WATER;
         } else {

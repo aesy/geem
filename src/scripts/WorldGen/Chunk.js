@@ -1,6 +1,8 @@
 import CullingChunkMesher from './CullingChunkMesher';
 import World from './World';
 
+const mesher = new CullingChunkMesher();
+
 export default class Chunk {
     constructor(x, y, z, world) {
         this.x = x;
@@ -49,7 +51,7 @@ export default class Chunk {
 
     getMesh() {
         if (this.mesh === null) {
-            this.mesh = new CullingChunkMesher().createMesh(this);
+            this.mesh = mesher.createMesh(this);
         }
 
         return this.mesh;

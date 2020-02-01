@@ -48,7 +48,12 @@ export default class CullingChunkMesher {
                             let textureIndex = block.getTextureIndex(direction);
 
                             for (const corner of face.corners) {
-                                vertices.push(corner.x + block.x, corner.y + block.y, corner.z + block.z);
+                                if (block.type === Block.Type.WATER) {
+                                    // HACK push water down a notch, it looks nice :-)
+                                    vertices.push(corner.x + block.x, corner.y + block.y - 0.2, corner.z + block.z);
+                                } else {
+                                    vertices.push(corner.x + block.x, corner.y + block.y, corner.z + block.z);
+                                }
 
                                 normals.push(face.normal.x, face.normal.y, face.normal.z);
 

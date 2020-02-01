@@ -15,7 +15,7 @@ export default class RenderSystem extends System {
 
         const scene = new Scene();
 
-        const renderer = new WebGLRenderer({ antialias: true });
+        const renderer = new WebGLRenderer();
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = VSMShadowMap;
         renderer.setClearColor(0x5D95A9);

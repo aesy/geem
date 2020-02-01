@@ -1,10 +1,10 @@
 import { makeNoise2D } from 'open-simplex-noise';
-import { Block } from './Block';
+import Block from './Block';
 import Chunk from './Chunk';
 
 const noise = makeNoise2D(Math.random() * Number.MAX_SAFE_INTEGER);
-const amplitude = 40;
-const frequency = 2;
+const amplitude = 35;
+const frequency = 1.5;
 
 export default class World {
     static CHUNK_SIZE = 32;
@@ -31,13 +31,12 @@ export default class World {
         const blockY = y - chunkY * World.CHUNK_SIZE;
         const blockZ = z - chunkZ * World.CHUNK_SIZE;
         const chunk = this.getChunk(chunkX, chunkY, chunkZ);
-        const block = { x, y, z, type };
+        const block = new Block(x, y, z, type, this);
 
         chunk.setBlock(blockX, blockY, blockZ, block);
     }
 
     getBlock(x, y, z) {
-        const block = { x, y, z };
         const xOffset = x / 100;
         const zOffset = z / 100;
         const layer1 = noise(zOffset * frequency, xOffset * frequency);
@@ -47,20 +46,22 @@ export default class World {
 
         const isGround = y <= Math.round(limit);
 
+        let type;
+
         if (isGround && y > 30) {
-            block.type = Block.Type.SNOW;
+            type = Block.Type.SNOW;
         } else if (isGround && y > 20) {
-            block.type = Block.Type.STONE;
+            type = Block.Type.STONE;
         } else if (isGround && y > 11) {
-            block.type = Block.Type.DIRT;
+            type = Block.Type.DIRT;
         } else if (isGround && y <= 11) {
-            block.type = Block.Type.SAND;
+            type = Block.Type.SAND;
         } else if (y <= 10) {
-            block.type = Block.Type.WATER;
+            type = Block.Type.WATER;
         } else {
-            block.type = Block.Type.AIR;
+            type = Block.Type.AIR;
         }
 
-        return block;
+        return new Block(x, y, z, type, this);
     }
 }

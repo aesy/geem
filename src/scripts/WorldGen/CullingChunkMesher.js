@@ -9,7 +9,7 @@ import {
 } from 'three';
 import textureAtlas from '../../assets/images/textureAtlas.png';
 import { Direction } from '../Util/Direction';
-import { Block } from './Block';
+import Block from './Block';
 import World from './World';
 
 const loader = new TextureLoader();
@@ -45,7 +45,7 @@ export default class CullingChunkMesher {
                         if (!Block.isOpaque(neighbor) && !neighborIsSameType) {
                             const index = vertices.length / 3;
                             const face = Cube.Face.direction(direction);
-                            const textureIndex = Block.getTextureIndex(block, direction);
+                            let textureIndex = block.getTextureIndex(direction);
 
                             for (const corner of face.corners) {
                                 vertices.push(corner.x + block.x, corner.y + block.y, corner.z + block.z);

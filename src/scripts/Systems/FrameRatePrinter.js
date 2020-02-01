@@ -7,10 +7,6 @@ export default class FrameRatePrinter extends System {
         this.elapsedTime = 0;
     }
 
-    appliesTo(entity) {
-        return false;
-    }
-
     update(dt, entities) {
         this.elapsedTime += dt;
 

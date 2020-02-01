@@ -1,3 +1,4 @@
+import Block from './Block';
 import CullingChunkMesher from './CullingChunkMesher';
 import World from './World';
 
@@ -31,7 +32,7 @@ export default class Chunk {
         const xOffset = this.x * World.CHUNK_SIZE;
         const yOffset = this.y * World.CHUNK_SIZE;
         const zOffset = this.z * World.CHUNK_SIZE;
-        const block = { x: xOffset + x, y: yOffset + y, z: zOffset + z, type };
+        const block = new Block(xOffset + x, yOffset + y, zOffset + z, type, this.world);
 
         this.data[ x + y * World.CHUNK_SIZE + z * World.CHUNK_SIZE * World.CHUNK_SIZE ] = block;
         this.mesh = null;

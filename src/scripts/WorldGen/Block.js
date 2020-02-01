@@ -1,21 +1,33 @@
 import { Direction } from '../Util/Direction';
 
-export const Block = {
-    Type: {
+export default class Block {
+    static Type = {
         AIR: 0,
         DIRT: 1,
         WATER: 2,
         SAND: 3,
         STONE: 4,
         SNOW: 5,
-    },
+    };
 
-    isOpaque(block) {
-        return [ Block.Type.DIRT, Block.Type.SAND, Block.Type.STONE, Block.Type.SNOW ].includes(block.type);
-    },
+    constructor(x, y, z, type, world) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.type = type;
+        this.world = world;
+    }
 
-    getTextureIndex(block, direction) {
-        switch (block.type) {
+    getAdjacentBlock(direction) {
+        return this.world.getBlock(this.x + direction.x, this.y + direction.y, this.z + direction.z);
+    }
+
+    getTextureIndex(direction) {
+        if (this.type === Block.Type.DIRT && this.getAdjacentBlock(Direction.TOP).type === Block.Type.DIRT) {
+            return 1;
+        }
+
+        switch (this.type) {
             case Block.Type.STONE:
                     return 5;
             case Block.Type.SNOW:
@@ -34,4 +46,13 @@ export const Block = {
                 throw 'Unknown or invalid block type';
         }
     }
-};
+
+    static isOpaque(block) {
+        return [
+            Block.Type.DIRT,
+            Block.Type.SAND,
+            Block.Type.STONE,
+            Block.Type.SNOW
+        ].includes(block.type);
+    }
+}

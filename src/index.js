@@ -1,5 +1,6 @@
 import 'normalize.css';
 import './assets/styles/index.scss';
+import AmbientLight from './scripts/Entities/AmbientLight';
 import DirectionalLight from './scripts/Entities/DirectionalLight';
 import Leaves from './scripts/Entities/Leaves';
 import Terrain from './scripts/Entities/Terrain';
@@ -16,7 +17,8 @@ const worldCenter = drawDistance * World.CHUNK_SIZE / 2;
 const game = new Game();
 game.addSystem(new RenderSystem(worldCenter, 0, worldCenter));
 game.addSystem(new FrameRatePrinter());
-game.addEntity(new DirectionalLight(worldCenter * 2, 200, worldCenter * 2));
+game.addEntity(new DirectionalLight(worldCenter * 2, 400, worldCenter * 2, 1));
+game.addEntity(new AmbientLight(0.2));
 
 for (let x = 0; x < drawDistance; x++) {
     for (let z = 0; z < drawDistance; z++) {

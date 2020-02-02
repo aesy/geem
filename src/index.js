@@ -1,7 +1,8 @@
 import 'normalize.css';
 import './assets/styles/index.scss';
 import DirectionalLight from './scripts/Entities/DirectionalLight';
-import ChunkMesh from './scripts/Entities/ChunkEntity';
+import Terrain from './scripts/Entities/Terrain';
+import Water from './scripts/Entities/Water';
 import Game from './scripts/Game/Game';
 import FrameRatePrinter from './scripts/Systems/FrameRatePrinter';
 import RenderSystem from './scripts/Systems/RenderSystem';
@@ -22,7 +23,8 @@ for (let x = 0; x < drawDistance; x++) {
             setTimeout(() => {
                 const chunk = world.getChunk(x, y, z);
 
-                game.addEntity(new ChunkMesh(chunk));
+                game.addEntity(new Terrain(chunk));
+                game.addEntity(new Water(chunk));
             }, 0);
         }
     }

@@ -36,7 +36,7 @@ export default class RenderSystem extends System {
         this.camera = camera;
         this.controls = controls;
     }
-    
+
     appliesTo(entity) {
         return entity.hasComponent(Object3D);
     }
@@ -44,7 +44,7 @@ export default class RenderSystem extends System {
     update(dt, entities) {
         for (const entity of entities) {
             const object = entity.getComponent(Object3D);
-            
+
             this.scene.add(object);
         }
 

@@ -1,8 +1,5 @@
 import Block from './Block';
-import CullingChunkMesher from './CullingChunkMesher';
 import World from './World';
-
-const mesher = new CullingChunkMesher();
 
 export default class Chunk {
     constructor(x, y, z, world) {
@@ -10,7 +7,6 @@ export default class Chunk {
         this.y = y;
         this.z = z;
         this.world = world;
-        this.mesh = null;
         this.data = new Array(World.CHUNK_SIZE * World.CHUNK_SIZE * World.CHUNK_SIZE);
 
         const xOffset = x * World.CHUNK_SIZE;
@@ -35,7 +31,6 @@ export default class Chunk {
         const block = new Block(xOffset + x, yOffset + y, zOffset + z, type, this.world);
 
         this.data[ x + y * World.CHUNK_SIZE + z * World.CHUNK_SIZE * World.CHUNK_SIZE ] = block;
-        this.mesh = null;
     }
 
     getBlock(x, y, z) {
@@ -48,13 +43,5 @@ export default class Chunk {
         }
 
         return this.data[ x + y * World.CHUNK_SIZE + z * World.CHUNK_SIZE * World.CHUNK_SIZE ];
-    }
-
-    getMesh() {
-        if (this.mesh === null) {
-            this.mesh = mesher.createMesh(this);
-        }
-
-        return this.mesh;
     }
 }

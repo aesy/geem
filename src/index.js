@@ -1,6 +1,7 @@
 import 'normalize.css';
 import './assets/styles/index.scss';
 import DirectionalLight from './scripts/Entities/DirectionalLight';
+import Leaves from './scripts/Entities/Leaves';
 import Terrain from './scripts/Entities/Terrain';
 import Water from './scripts/Entities/Water';
 import Game from './scripts/Game/Game';
@@ -25,6 +26,7 @@ for (let x = 0; x < drawDistance; x++) {
 
                 game.addEntity(new Terrain(chunk));
                 game.addEntity(new Water(chunk));
+                game.addEntity(new Leaves(chunk));
             }, 0);
         }
     }

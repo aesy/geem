@@ -5,11 +5,7 @@ import Block from '../WorldGen/Block';
 import Entity from './Entity';
 
 const mesher = new CullingChunkMesher([
-    Block.Type.DIRT,
-    Block.Type.SAND,
-    Block.Type.SNOW,
-    Block.Type.STONE,
-    Block.Type.TREE
+    Block.Type.LEAVES
 ]);
 
 const loader = new TextureLoader();
@@ -18,16 +14,14 @@ texture.wrapS = RepeatWrapping;
 texture.wrapT = RepeatWrapping;
 texture.magFilter = NearestFilter;
 texture.minFilter = NearestFilter;
-const material = new MeshLambertMaterial({ map: texture });
+const material = new MeshLambertMaterial({ map: texture, transparent: true });
 
-export default class Terrain extends Entity {
+export default class Leaves extends Entity {
     constructor(chunk) {
         super();
 
         const geometry = mesher.createGeometry(chunk);
         const mesh = new Mesh(geometry, material);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
 
         this.addComponent(mesh);
     }

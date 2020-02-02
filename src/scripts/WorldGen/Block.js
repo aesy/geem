@@ -8,6 +8,8 @@ export default class Block {
         SAND: 3,
         STONE: 4,
         SNOW: 5,
+        TREE: 6,
+        LEAVES: 7
     };
 
     constructor(x, y, z, type, world) {
@@ -29,9 +31,13 @@ export default class Block {
 
         switch (this.type) {
             case Block.Type.STONE:
-                    return 5;
+                return 5;
             case Block.Type.SNOW:
-                    return 6;
+                return 6;
+            case Block.Type.TREE:
+                return 7;
+            case Block.Type.LEAVES:
+                return 8;
             case Block.Type.DIRT:
                 if (direction === Direction.TOP) {
                     return 0;
@@ -52,7 +58,8 @@ export default class Block {
             Block.Type.DIRT,
             Block.Type.SAND,
             Block.Type.STONE,
-            Block.Type.SNOW
+            Block.Type.SNOW,
+            Block.Type.TREE
         ].includes(block.type);
     }
 }

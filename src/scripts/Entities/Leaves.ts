@@ -1,8 +1,9 @@
 import { Mesh, MeshLambertMaterial, NearestFilter, RepeatWrapping, TextureLoader } from 'three';
 import textureAtlas from '../../assets/images/textureAtlas.png';
+import Entity from './Entity';
 import CullingChunkMesher from '../WorldGen/CullingChunkMesher';
 import Block from '../WorldGen/Block';
-import Entity from './Entity';
+import Chunk from '../WorldGen/Chunk';
 
 const mesher = new CullingChunkMesher([
     Block.Type.LEAVES
@@ -17,7 +18,7 @@ texture.minFilter = NearestFilter;
 const material = new MeshLambertMaterial({ map: texture, transparent: true });
 
 export default class Leaves extends Entity {
-    constructor(chunk) {
+    constructor(chunk: Chunk) {
         super();
 
         const geometry = mesher.createGeometry(chunk);

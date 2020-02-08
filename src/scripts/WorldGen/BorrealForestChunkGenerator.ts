@@ -3,16 +3,78 @@ import { makeNoise2D, makeNoise3D } from 'open-simplex-noise';
 import Block from './Block';
 import Chunk from './Chunk';
 import World from './World';
+// @ts-ignore
 import PoissonDiskSampling from 'poisson-disk-sampling';
-import { Vector3 } from 'three';
 
 const noise = makeNoise2D(Math.random() * Number.MAX_SAFE_INTEGER);
 const noise3d = makeNoise3D(Math.random() * Number.MAX_SAFE_INTEGER);
 const amplitude = 40;
 const frequency = .5;
 
+const TreeTemplate = [
+    { x: 0, y: 0, z: 0, type: Block.Type.TREE },
+    { x: 0, y: 1, z: 0, type: Block.Type.TREE },
+    { x: 0, y: 2, z: 0, type: Block.Type.TREE },
+    { x: 0, y: 3, z: 0, type: Block.Type.TREE },
+    { x: 0, y: 4, z: 0, type: Block.Type.TREE },
+    { x: 0, y: 5, z: 0, type: Block.Type.TREE },
+    { x: 0, y: 6, z: 0, type: Block.Type.TREE },
+    { x: 0, y: 7, z: 0, type: Block.Type.TREE },
+    { x: 0, y: 8, z: 0, type: Block.Type.TREE },
+    { x: 0, y: 9, z: 0, type: Block.Type.TREE },
+    { x: 0, y: 10, z: 0, type: Block.Type.TREE },
+    { x: 0, y: 11, z: 0, type: Block.Type.LEAVES },
+    { x: 1, y: 10, z: 0, type: Block.Type.LEAVES },
+    { x: -1, y: 10, z: 0, type: Block.Type.LEAVES },
+    { x: 0, y: 10, z: 1, type: Block.Type.LEAVES },
+    { x: 0, y: 10, z: -1, type: Block.Type.LEAVES },
+    { x: 1, y: 8, z: 0, type: Block.Type.LEAVES },
+    { x: -1, y: 8, z: 0, type: Block.Type.LEAVES },
+    { x: 0, y: 8, z: 1, type: Block.Type.LEAVES },
+    { x: 0, y: 8, z: -1, type: Block.Type.LEAVES },
+    { x: 1, y: 7, z: 0, type: Block.Type.LEAVES },
+    { x: -1, y: 7, z: 0, type: Block.Type.LEAVES },
+    { x: 0, y: 7, z: 1, type: Block.Type.LEAVES },
+    { x: 0, y: 7, z: -1, type: Block.Type.LEAVES },
+    { x: 1, y: 5, z: 0, type: Block.Type.LEAVES },
+    { x: -1, y: 5, z: 0, type: Block.Type.LEAVES },
+    { x: 0, y: 5, z: 1, type: Block.Type.LEAVES },
+    { x: 0, y: 5, z: -1, type: Block.Type.LEAVES },
+    { x: 1, y: 4, z: 0, type: Block.Type.LEAVES },
+    { x: -1, y: 4, z: 0, type: Block.Type.LEAVES },
+    { x: 0, y: 4, z: 1, type: Block.Type.LEAVES },
+    { x: 0, y: 4, z: -1, type: Block.Type.LEAVES },
+    { x: 2, y: 4, z: 0, type: Block.Type.LEAVES },
+    { x: -2, y: 4, z: 0, type: Block.Type.LEAVES },
+    { x: 0, y: 4, z: 2, type: Block.Type.LEAVES },
+    { x: 0, y: 4, z: -2, type: Block.Type.LEAVES },
+    { x: 1, y: 2, z: 0, type: Block.Type.LEAVES },
+    { x: -1, y: 2, z: 0, type: Block.Type.LEAVES },
+    { x: 0, y: 2, z: 1, type: Block.Type.LEAVES },
+    { x: 0, y: 2, z: -1, type: Block.Type.LEAVES }
+];
+
+const CaveTemplate = [
+    { x: 0, y: 0, z: 0, type: Block.Type.DIRT },
+    { x: 1, y: 0, z: 0, type: Block.Type.DIRT },
+    { x: -1, y: 0, z: 0, type: Block.Type.DIRT },
+    { x: 0, y: 0, z: 1, type: Block.Type.DIRT },
+    { x: 0, y: 0, z: -1, type: Block.Type.DIRT },
+    { x: 0, y: 1, z: 0, type: Block.Type.DIRT },
+    { x: 0, y: -1, z: 0, type: Block.Type.DIRT },
+
+    { x: 1, y: 1, z: 1, type: Block.Type.DIRT },
+    { x: -1, y: 1, z: 1, type: Block.Type.DIRT },
+    { x: -1, y: 1, z: -1, type: Block.Type.DIRT },
+    { x: 1, y: 1, z: -1, type: Block.Type.DIRT },
+    { x: 1, y: -1, z: 1, type: Block.Type.DIRT },
+    { x: -1, y: -1, z: 1, type: Block.Type.DIRT },
+    { x: -1, y: -1, z: -1, type: Block.Type.DIRT },
+    { x: 1, y: -1, z: -1, type: Block.Type.DIRT },
+];
+
 export default class BorrealForestChunkGenerator {
-    generateChunk(x, y, z, world) {
+    generateChunk(x: number, y: number, z: number, world: World): Chunk {
         const chunk = new Chunk(x, y, z, world);
 
         this.generateTerrain(chunk);
@@ -22,7 +84,7 @@ export default class BorrealForestChunkGenerator {
         return chunk;
     }
 
-    generateTerrain(chunk) {
+    generateTerrain(chunk: Chunk): void {
         const xOffset = chunk.x * World.CHUNK_SIZE;
         const yOffset = chunk.y * World.CHUNK_SIZE;
         const zOffset = chunk.z * World.CHUNK_SIZE;
@@ -42,7 +104,7 @@ export default class BorrealForestChunkGenerator {
                     const layer2 = 0.5 * noise(noiseX * frequency * 2, noiseZ * frequency * 2);
                     const layer3 = 0.25 * noise(noiseX * frequency * 4, noiseZ * frequency * 4);
 
-                    let limit = amplitude * ((layer1 + layer2 + layer3));
+                    const limit = amplitude * ((layer1 + layer2 + layer3));
                     const isGround = worldY <= Math.round(limit);
 
                     const caveNoiseX = worldX / 180;
@@ -53,11 +115,11 @@ export default class BorrealForestChunkGenerator {
                     const caveLayer = noise3d(caveNoiseX * caveFrequency, caveNoiseY * caveFrequency, caveNoiseZ * caveFrequency);
                     const caveLayer2 = 0.5 * noise3d(caveNoiseX * 2 * caveFrequency, caveNoiseY * 2 * caveFrequency, caveNoiseZ * 2 * caveFrequency);
                     const caveLayer3 = 0.25 * noise3d(caveNoiseX * 4 * caveFrequency, caveNoiseY * 4 * caveFrequency, caveNoiseZ * 4 * caveFrequency);
-
-                    let caveLimit = caveLayer + caveLayer2 + caveLayer3;
+                    const caveLimit = caveLayer + caveLayer2 + caveLayer3;
                     const isCave =  .5 <= Math.round(caveLimit);
 
-                    let type = Block.Type.Air;
+                    let type;
+
                     if (isGround && worldY > 80) {
                         type = Block.Type.SNOW;
                     } else if (isCave && isGround) {
@@ -78,7 +140,7 @@ export default class BorrealForestChunkGenerator {
         }
     }
 
-    generateTrees(chunk) {
+    generateTrees(chunk: Chunk): void {
         const sampler = new PoissonDiskSampling([ World.CHUNK_SIZE - 1, World.CHUNK_SIZE - 1 ], 5, 20, 10);
         const points = sampler.fill();
 
@@ -103,10 +165,11 @@ export default class BorrealForestChunkGenerator {
         }
     }
 
-    generateCaves(chunk) {
+    generateCaves(chunk: Chunk): void {
         const xOffset = chunk.x * World.CHUNK_SIZE;
         const yOffset = chunk.y * World.CHUNK_SIZE;
         const zOffset = chunk.z * World.CHUNK_SIZE;
+
         for (let blockX = 0; blockX < World.CHUNK_SIZE; blockX++) {
             for (let blockY = 0; blockY < World.CHUNK_SIZE; blockY++) {
                 for (let blockZ = 0; blockZ < World.CHUNK_SIZE; blockZ++) {
@@ -118,14 +181,11 @@ export default class BorrealForestChunkGenerator {
                     const noiseY = worldY / 100;
                     const noiseZ = worldZ / 100;
 
-                    const layer = noise(noiseX * frequency, noiseY * frequency, noiseZ * frequency);
-                    const layer2 = 0.5 * noise(noiseX * 2 * frequency, noiseY * 2 * frequency, noiseZ * 2 * frequency);
-                    const layer3 = 0.25 * noise(noiseX * 4 * frequency, noiseY * 4 * frequency, noiseZ * 4 * frequency);
-
-                    let limit = layer + layer2 + layer3;
-
+                    const layer = noise3d(noiseX * frequency, noiseY * frequency, noiseZ * frequency);
+                    const layer2 = 0.5 * noise3d(noiseX * 2 * frequency, noiseY * 2 * frequency, noiseZ * 2 * frequency);
+                    const layer3 = 0.25 * noise3d(noiseX * 4 * frequency, noiseY * 4 * frequency, noiseZ * 4 * frequency);
+                    const limit = layer + layer2 + layer3;
                     const isGround =  0 <= Math.round(limit);
-
                     let type;
 
                     if (isGround) {
@@ -154,11 +214,10 @@ export default class BorrealForestChunkGenerator {
     //     return wallCount;
     // }
 
-    generateWorms(chunk) {
+    generateWorms(chunk: Chunk): void {
         const xOffset = chunk.x * World.CHUNK_SIZE;
         const yOffset = chunk.y * World.CHUNK_SIZE;
         const zOffset = chunk.z * World.CHUNK_SIZE;
-        let map = [];
         const fill = 0.02;
 
         for (let blockX = 0; blockX < World.CHUNK_SIZE; blockX++) {
@@ -220,71 +279,9 @@ export default class BorrealForestChunkGenerator {
         // }
     }
 
-    applyTemplate(x, y, z, chunk, template) {
+    applyTemplate(x: number, y: number, z: number, chunk: Chunk, template: any[]): void {
         for (const block of template) {
             chunk.setBlock(x + block.x, y + block.y, z + block.z, block.type);
         }
     }
 }
-
-const TreeTemplate = [
-    { x: 0, y: 0, z: 0, type: Block.Type.TREE },
-    { x: 0, y: 1, z: 0, type: Block.Type.TREE },
-    { x: 0, y: 2, z: 0, type: Block.Type.TREE },
-    { x: 0, y: 3, z: 0, type: Block.Type.TREE },
-    { x: 0, y: 4, z: 0, type: Block.Type.TREE },
-    { x: 0, y: 5, z: 0, type: Block.Type.TREE },
-    { x: 0, y: 6, z: 0, type: Block.Type.TREE },
-    { x: 0, y: 7, z: 0, type: Block.Type.TREE },
-    { x: 0, y: 8, z: 0, type: Block.Type.TREE },
-    { x: 0, y: 9, z: 0, type: Block.Type.TREE },
-    { x: 0, y: 10, z: 0, type: Block.Type.TREE },
-    { x: 0, y: 11, z: 0, type: Block.Type.LEAVES },
-    { x: 1, y: 10, z: 0, type: Block.Type.LEAVES },
-    { x: -1, y: 10, z: 0, type: Block.Type.LEAVES },
-    { x: 0, y: 10, z: 1, type: Block.Type.LEAVES },
-    { x: 0, y: 10, z: -1, type: Block.Type.LEAVES },
-    { x: 1, y: 8, z: 0, type: Block.Type.LEAVES },
-    { x: -1, y: 8, z: 0, type: Block.Type.LEAVES },
-    { x: 0, y: 8, z: 1, type: Block.Type.LEAVES },
-    { x: 0, y: 8, z: -1, type: Block.Type.LEAVES },
-    { x: 1, y: 7, z: 0, type: Block.Type.LEAVES },
-    { x: -1, y: 7, z: 0, type: Block.Type.LEAVES },
-    { x: 0, y: 7, z: 1, type: Block.Type.LEAVES },
-    { x: 0, y: 7, z: -1, type: Block.Type.LEAVES },
-    { x: 1, y: 5, z: 0, type: Block.Type.LEAVES },
-    { x: -1, y: 5, z: 0, type: Block.Type.LEAVES },
-    { x: 0, y: 5, z: 1, type: Block.Type.LEAVES },
-    { x: 0, y: 5, z: -1, type: Block.Type.LEAVES },
-    { x: 1, y: 4, z: 0, type: Block.Type.LEAVES },
-    { x: -1, y: 4, z: 0, type: Block.Type.LEAVES },
-    { x: 0, y: 4, z: 1, type: Block.Type.LEAVES },
-    { x: 0, y: 4, z: -1, type: Block.Type.LEAVES },
-    { x: 2, y: 4, z: 0, type: Block.Type.LEAVES },
-    { x: -2, y: 4, z: 0, type: Block.Type.LEAVES },
-    { x: 0, y: 4, z: 2, type: Block.Type.LEAVES },
-    { x: 0, y: 4, z: -2, type: Block.Type.LEAVES },
-    { x: 1, y: 2, z: 0, type: Block.Type.LEAVES },
-    { x: -1, y: 2, z: 0, type: Block.Type.LEAVES },
-    { x: 0, y: 2, z: 1, type: Block.Type.LEAVES },
-    { x: 0, y: 2, z: -1, type: Block.Type.LEAVES },
-];
-
-const caveTemplate = [
-    { x: 0, y: 0, z: 0, type: Block.Type.DIRT },
-    { x: 1, y: 0, z: 0, type: Block.Type.DIRT },
-    { x: -1, y: 0, z: 0, type: Block.Type.DIRT },
-    { x: 0, y: 0, z: 1, type: Block.Type.DIRT },
-    { x: 0, y: 0, z: -1, type: Block.Type.DIRT },
-    { x: 0, y: 1, z: 0, type: Block.Type.DIRT },
-    { x: 0, y: -1, z: 0, type: Block.Type.DIRT },
-    
-    { x: 1, y: 1, z: 1, type: Block.Type.DIRT },
-    { x: -1, y: 1, z: 1, type: Block.Type.DIRT },
-    { x: -1, y: 1, z: -1, type: Block.Type.DIRT },
-    { x: 1, y: 1, z: -1, type: Block.Type.DIRT },
-    { x: 1, y: -1, z: 1, type: Block.Type.DIRT },
-    { x: -1, y: -1, z: 1, type: Block.Type.DIRT },
-    { x: -1, y: -1, z: -1, type: Block.Type.DIRT },
-    { x: 1, y: -1, z: -1, type: Block.Type.DIRT },
-];

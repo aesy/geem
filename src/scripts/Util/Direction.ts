@@ -6,7 +6,7 @@ export const Direction = {
     BACK: { x: 0, y: 0, z: -1 },
     FRONT: { x: 0, y: 0, z: 1 },
 
-    all() {
+    all(): { x: number; y: number; z: number }[] {
         return [
             Direction.LEFT, Direction.RIGHT, Direction.BOTTOM, Direction.TOP, Direction.BACK, Direction.FRONT
         ];

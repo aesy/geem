@@ -1,3 +1,4 @@
+import World from './World';
 import { Direction } from '../Util/Direction';
 
 export default class Block {
@@ -12,19 +13,19 @@ export default class Block {
         LEAVES: 7
     };
 
-    constructor(x, y, z, type, world) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.type = type;
-        this.world = world;
-    }
+    constructor(
+        public readonly x: number,
+        public readonly y: number,
+        public readonly z: number,
+        public readonly type: number,
+        private readonly world: World
+    ) {}
 
-    getAdjacentBlock(direction) {
+    getAdjacentBlock(direction: { x: number; y: number; z: number }): Block {
         return this.world.getBlock(this.x + direction.x, this.y + direction.y, this.z + direction.z);
     }
 
-    getTextureIndex(direction) {
+    getTextureIndex(direction: { x: number; y: number; z: number }): number {
         if (this.type === Block.Type.DIRT && this.getAdjacentBlock(Direction.TOP).type === Block.Type.DIRT) {
             return 1;
         }
@@ -53,7 +54,7 @@ export default class Block {
         }
     }
 
-    static isOpaque(block) {
+    static isOpaque(block: Block): boolean {
         return [
             Block.Type.DIRT,
             Block.Type.SAND,

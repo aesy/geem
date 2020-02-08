@@ -6,9 +6,9 @@ import Leaves from './scripts/Entities/Leaves';
 import Terrain from './scripts/Entities/Terrain';
 import Water from './scripts/Entities/Water';
 import Game from './scripts/Game/Game';
-import FrameRatePrinter from './scripts/Systems/FrameRatePrinter';
 import RenderSystem from './scripts/Systems/RenderSystem';
 import World from './scripts/WorldGen/World';
+import FrameRatePrinter from './scripts/Systems/FrameRatePrinter';
 
 const drawDistance = 5;
 const world = new World();

@@ -1,8 +1,8 @@
-import Entity from './Entity';
 import { DirectionalLight as ThreeDirectionalLight } from 'three';
+import Entity from './Entity';
 
 export default class DirectionalLight extends Entity {
-    constructor(x, y, z, intensity) {
+    constructor(x: number, y: number, z: number, intensity: number) {
         super();
 
         const light = new ThreeDirectionalLight(0xFFFFFF, intensity);

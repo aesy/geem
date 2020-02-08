@@ -1,4 +1,5 @@
 import Block from './Block';
+import Chunk from './Chunk';
 import ChunkGenerator from './ChunkGenerator';
 
 const chunkGenerator = new ChunkGenerator();
@@ -6,16 +7,16 @@ const chunkGenerator = new ChunkGenerator();
 export default class World {
     static CHUNK_SIZE = 32;
 
-    octant1 = []; // +x, +y, +z
-    octant2 = []; // -x, +y, +z
-    octant3 = []; // +x, -y, +z
-    octant4 = []; // -x, -y, +z
-    octant5 = []; // +x, +y, -z
-    octant6 = []; // -x, +y, -z
-    octant7 = []; // +x, -y, -z
-    octant8 = []; // -x, -y, -z
+    octant1: Chunk[] = []; // +x, +y, +z
+    octant2: Chunk[] = []; // -x, +y, +z
+    octant3: Chunk[] = []; // +x, -y, +z
+    octant4: Chunk[] = []; // -x, -y, +z
+    octant5: Chunk[] = []; // +x, +y, -z
+    octant6: Chunk[] = []; // -x, +y, -z
+    octant7: Chunk[] = []; // +x, -y, -z
+    octant8: Chunk[] = []; // -x, -y, -z
 
-    getChunk(x, y, z) {
+    getChunk(x: number, y: number, z: number): Chunk {
         const index = Math.abs(x) + Math.abs(y) * World.CHUNK_SIZE + Math.abs(z) * World.CHUNK_SIZE * World.CHUNK_SIZE;
         const positiveX = x >= 0;
         const positiveY = y >= 0;
@@ -53,7 +54,7 @@ export default class World {
         return chunk;
     }
 
-    setBlock(x, y, z, type) {
+    setBlock(x: number, y: number, z: number, type: number): void {
         const chunkX = Math.floor(x / World.CHUNK_SIZE);
         const chunkY = Math.floor(y / World.CHUNK_SIZE);
         const chunkZ = Math.floor(z / World.CHUNK_SIZE);
@@ -61,12 +62,11 @@ export default class World {
         const blockY = y - chunkY * World.CHUNK_SIZE;
         const blockZ = z - chunkZ * World.CHUNK_SIZE;
         const chunk = this.getChunk(chunkX, chunkY, chunkZ);
-        const block = new Block(x, y, z, type, this);
 
-        chunk.setBlock(blockX, blockY, blockZ, block);
+        chunk.setBlock(blockX, blockY, blockZ, type);
     }
 
-    getBlock(x, y, z) {
+    getBlock(x: number, y: number, z: number): Block {
         const chunkX = Math.floor(x / World.CHUNK_SIZE);
         const chunkY = Math.floor(y / World.CHUNK_SIZE);
         const chunkZ = Math.floor(z / World.CHUNK_SIZE);

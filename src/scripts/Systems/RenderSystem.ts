@@ -3,14 +3,22 @@ import {
     Scene,
     WebGLRenderer,
     PerspectiveCamera,
-    VSMShadowMap
+    VSMShadowMap,
+    Renderer
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import System from './System.js';
+import Entity from '../Entities/Entity';
+import System from './System';
 
 export default class RenderSystem extends System {
-    constructor(cameraTargetX, cameraTargetY, cameraTargetZ) {
+    private readonly scene: Scene;
+    private readonly renderer: Renderer;
+    private readonly camera: PerspectiveCamera;
+    private readonly controls: OrbitControls;
+
+    constructor(cameraTargetX: number, cameraTargetY: number, cameraTargetZ: number) {
         super();
+
         const { innerHeight, innerWidth } = window;
 
         const scene = new Scene();
@@ -37,11 +45,11 @@ export default class RenderSystem extends System {
         this.controls = controls;
     }
 
-    appliesTo(entity) {
+    appliesTo(entity: Entity): boolean {
         return entity.hasComponent(Object3D);
     }
 
-    update(dt, entities) {
+    update(dt: number, entities: Entity[]): void {
         for (const entity of entities) {
             const object = entity.getComponent(Object3D);
 
@@ -51,7 +59,7 @@ export default class RenderSystem extends System {
         this.renderer.render(this.scene, this.camera);
     }
 
-    onResize() {
+    onResize(): void {
         const { innerHeight, innerWidth } = window;
 
         this.renderer.setSize(innerWidth, innerHeight);

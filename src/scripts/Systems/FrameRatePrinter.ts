@@ -1,13 +1,10 @@
+import Entity from '../Entities/Entity';
 import System from './System';
 
 export default class FrameRatePrinter extends System {
-    constructor() {
-        super();
+    private elapsedTime = 0;
 
-        this.elapsedTime = 0;
-    }
-
-    update(dt, entities) {
+    update(dt: number, entities: Entity[]): void {
         this.elapsedTime += dt;
 
         if (this.elapsedTime > 1) {

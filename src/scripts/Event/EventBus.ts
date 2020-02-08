@@ -1,19 +1,17 @@
 export default class EventBus {
-    constructor() {
-        this.events = new Map();
-    }
+    events = new Map<Function, Function[]>();
 
-    register(type, callback) {
-        if (!this.events.has(type)) {
-            this.events.set(type, []);
-        }
-
+    register(type: Function, callback: Function): void {
         const callbacks = this.events.get(type);
 
-        callbacks.push(callback);
+        if (callbacks) {
+            callbacks.push(callback);
+        } else {
+            this.events.set(type, [ callback ]);
+        }
     }
 
-    emit(event) {
+    emit(event: object): void {
         const callbacks = this.events.get(event.constructor);
 
         if (callbacks) {

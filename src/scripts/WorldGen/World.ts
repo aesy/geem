@@ -1,26 +1,48 @@
-import Block from './Block';
-import Chunk from './Chunk';
-import ChunkGenerator from './ChunkGenerator';
+import { Coordinate3 } from '../Util/Math';
+import { ArchipelagoChunkGenerator } from './ArchipelagoChunkGenerator';
+import { Block } from './Block';
+import { Chunk, ChunkGenerator } from './Chunk';
 
-const chunkGenerator = new ChunkGenerator();
+export type WorldData = Chunk[];
 
-export default class World {
-    static CHUNK_SIZE = 32;
+export class WorldUtils {
+    private constructor() {}
 
-    octant1: Chunk[] = []; // +x, +y, +z
-    octant2: Chunk[] = []; // -x, +y, +z
-    octant3: Chunk[] = []; // +x, -y, +z
-    octant4: Chunk[] = []; // -x, -y, +z
-    octant5: Chunk[] = []; // +x, +y, -z
-    octant6: Chunk[] = []; // -x, +y, -z
-    octant7: Chunk[] = []; // +x, -y, -z
-    octant8: Chunk[] = []; // -x, -y, -z
+    public static worldToChunk(pos: Coordinate3): Coordinate3 {
+        const x = Math.floor(pos.x / Chunk.SIZE);
+        const y = Math.floor(pos.y / Chunk.SIZE);
+        const z = Math.floor(pos.z / Chunk.SIZE);
 
-    getChunk(x: number, y: number, z: number): Chunk {
-        const index = Math.abs(x) + Math.abs(y) * World.CHUNK_SIZE + Math.abs(z) * World.CHUNK_SIZE * World.CHUNK_SIZE;
-        const positiveX = x >= 0;
-        const positiveY = y >= 0;
-        const positiveZ = z >= 0;
+        return { x, y, z };
+    }
+
+    public static chunkToWorld(worldPos: Coordinate3, chunkPos: Coordinate3): Coordinate3 {
+        const x = chunkPos.x + worldPos.x;
+        const y = chunkPos.y + worldPos.y;
+        const z = chunkPos.z + worldPos.z;
+
+        return { x, y, z };
+    }
+}
+
+export class World {
+    private readonly octant1: WorldData = []; // +x, +y, +z
+    private readonly octant2: WorldData = []; // -x, +y, +z
+    private readonly octant3: WorldData = []; // +x, -y, +z
+    private readonly octant4: WorldData = []; // -x, -y, +z
+    private readonly octant5: WorldData = []; // +x, +y, -z
+    private readonly octant6: WorldData = []; // -x, +y, -z
+    private readonly octant7: WorldData = []; // +x, -y, -z
+    private readonly octant8: WorldData = []; // -x, -y, -z
+
+    public constructor(
+        private readonly chunkGenerator: ChunkGenerator = new ArchipelagoChunkGenerator()
+    ) {}
+
+    public getChunk(pos: Coordinate3): Chunk {
+        const positiveX = pos.x >= 0;
+        const positiveY = pos.y >= 0;
+        const positiveZ = pos.z >= 0;
         let chunks;
 
         if (positiveX && positiveY && positiveZ) {
@@ -40,41 +62,39 @@ export default class World {
         } else if (!positiveX && !positiveY && !positiveZ) {
             chunks = this.octant8;
         } else {
-            throw `Trying to get a chunk in unknown octant (x: ${ x }, y: ${ y },z: ${ z }), this should not happen.`;
+            throw `Trying to get a chunk in unknown octant (x: ${ pos.x }, y: ${ pos.y },z: ${ pos.z }), this should not happen.`;
         }
 
+        const index = Math.abs(pos.x) + Math.abs(pos.y) * Chunk.SIZE + Math.abs(pos.z) * Chunk.SIZE_SQUARED;
         let chunk = chunks[ index ];
 
         if (!chunk) {
-            console.log(`Generating chunk (x: ${ x }, y: ${ y }, z: ${ z })`);
-            chunk = chunkGenerator.generateChunk(x, y, z, this);
+            console.log(`Generating chunk (x: ${ pos.x }, y: ${ pos.y }, z: ${ pos.z })`);
+            chunk = Chunk.createWorldRelativeChunk(pos, this, []);
+            this.chunkGenerator.generateChunk(chunk);
             chunks[ index ] = chunk;
         }
 
         return chunk;
     }
 
-    setBlock(x: number, y: number, z: number, type: number): void {
-        const chunkX = Math.floor(x / World.CHUNK_SIZE);
-        const chunkY = Math.floor(y / World.CHUNK_SIZE);
-        const chunkZ = Math.floor(z / World.CHUNK_SIZE);
-        const blockX = x - chunkX * World.CHUNK_SIZE;
-        const blockY = y - chunkY * World.CHUNK_SIZE;
-        const blockZ = z - chunkZ * World.CHUNK_SIZE;
-        const chunk = this.getChunk(chunkX, chunkY, chunkZ);
+    public setBlock(pos: Coordinate3, block: Block): void {
+        const chunkPos = WorldUtils.worldToChunk(pos);
+        const blockX = pos.x - chunkPos.x * Chunk.SIZE;
+        const blockY = pos.y - chunkPos.y * Chunk.SIZE;
+        const blockZ = pos.z - chunkPos.z * Chunk.SIZE;
+        const chunk = this.getChunk(chunkPos);
 
-        chunk.setBlock(blockX, blockY, blockZ, type);
+        chunk.setBlock({ x: blockX, y: blockY, z: blockZ }, block);
     }
 
-    getBlock(x: number, y: number, z: number): Block {
-        const chunkX = Math.floor(x / World.CHUNK_SIZE);
-        const chunkY = Math.floor(y / World.CHUNK_SIZE);
-        const chunkZ = Math.floor(z / World.CHUNK_SIZE);
-        const blockX = x - chunkX * World.CHUNK_SIZE;
-        const blockY = y - chunkY * World.CHUNK_SIZE;
-        const blockZ = z - chunkZ * World.CHUNK_SIZE;
-        const chunk = this.getChunk(chunkX, chunkY, chunkZ);
+    public getBlock(pos: Coordinate3): Block {
+        const chunkPos = WorldUtils.worldToChunk(pos);
+        const blockX = pos.x - chunkPos.x * Chunk.SIZE;
+        const blockY = pos.y - chunkPos.y * Chunk.SIZE;
+        const blockZ = pos.z - chunkPos.z * Chunk.SIZE;
+        const chunk = this.getChunk(chunkPos);
 
-        return chunk.getBlock(blockX, blockY, blockZ);
+        return chunk.getBlock({ x: blockX, y: blockY, z: blockZ });
     }
 }

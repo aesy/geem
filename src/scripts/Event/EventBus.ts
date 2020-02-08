@@ -1,7 +1,7 @@
-export default class EventBus {
-    events = new Map<Function, Function[]>();
+export class EventBus {
+    private readonly events = new Map<Function, Function[]>();
 
-    register(type: Function, callback: Function): void {
+    public register(type: Function, callback: Function): void {
         const callbacks = this.events.get(type);
 
         if (callbacks) {
@@ -11,7 +11,7 @@ export default class EventBus {
         }
     }
 
-    emit(event: object): void {
+    public emit(event: object): void {
         const callbacks = this.events.get(event.constructor);
 
         if (callbacks) {

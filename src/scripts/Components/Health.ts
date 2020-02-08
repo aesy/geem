@@ -1,5 +1,5 @@
-export default class Health {
-    constructor(
+export class Health {
+    public constructor(
         public value: number
     ) {}
 }

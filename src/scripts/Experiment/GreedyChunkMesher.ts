@@ -1,12 +1,12 @@
 // import { BufferAttribute, BufferGeometry } from 'three';
 // import World from './World';
 //
-// export default class GreedyChunkMesher {
+// export class GreedyChunkMesher {
 //     createGeometry(chunk) {
 //         const xOffset = chunk.x * chunk.width;
 //         const yOffset = chunk.y * chunk.height;
 //         const zOffset = chunk.z * chunk.depth;
-//         // TODO use chunk.width/height/depth instead of World.CHUNK_SIZE
+//         // TODO use chunk.width/height/depth instead of Chunk.SIZE
 //         const vertices = [];
 //         const normals = [];
 //         const uvs = [];
@@ -22,14 +22,14 @@
 //                 normalVector[ norm ] = 1;
 //
 //                 // TODO inline
-//                 const mask = new Mask2D(World.CHUNK_SIZE, World.CHUNK_SIZE);
+//                 const mask = new Mask2D(Chunk.SIZE, Chunk.SIZE);
 //
-//                 for (let slice = 0; slice < World.CHUNK_SIZE; slice++) {
+//                 for (let slice = 0; slice < Chunk.SIZE; slice++) {
 //                     const cursor = [ 0, 0, 0 ];
 //                     cursor[ norm ] = slice;
 //
-//                     for (cursor[ biTan ] = 0; cursor[ biTan ] < World.CHUNK_SIZE; ++cursor[ biTan ]) {
-//                         for (cursor[ tan ] = 0; cursor[ tan ] < World.CHUNK_SIZE; ++cursor[ tan ]) {
+//                     for (cursor[ biTan ] = 0; cursor[ biTan ] < Chunk.SIZE; ++cursor[ biTan ]) {
+//                         for (cursor[ tan ] = 0; cursor[ tan ] < Chunk.SIZE; ++cursor[ tan ]) {
 //                             const voxelInSlice = chunk.getBlock(...cursor);
 //                             const voxelInPreviousSlice = chunk.getBlock(
 //                                 cursor[ 0 ] - normalVector[ 0 ],
@@ -48,8 +48,8 @@
 //
 //                     let n = 0;
 //
-//                     for (let y = 0; y < World.CHUNK_SIZE; y++) {
-//                         for (let x = 0; x < World.CHUNK_SIZE;) {
+//                     for (let y = 0; y < Chunk.SIZE; y++) {
+//                         for (let x = 0; x < Chunk.SIZE;) {
 //                             if (!mask.get(x, y)) {
 //                                 n++;
 //                                 x++;
@@ -57,12 +57,12 @@
 //                             }
 //
 //                             let width = 1;
-//                             while (x + width < World.CHUNK_SIZE && mask.get(x + width, y)) {
+//                             while (x + width < Chunk.SIZE && mask.get(x + width, y)) {
 //                                 width++;
 //                             }
 //
 //                             let height = 1;
-//                             outer: for (; y + height < World.CHUNK_SIZE; height++) {
+//                             outer: for (; y + height < Chunk.SIZE; height++) {
 //                                 for (let k = x; k < x + width; k++) {
 //                                     if (!mask.get(k, y + height)) {
 //                                         break outer;
@@ -132,7 +132,7 @@
 //
 //                             for (let l = 0; l < height; l++) {
 //                                 for (let k = 0; k < width; k++) {
-//                                     mask.data[ n + k + l * World.CHUNK_SIZE ] = false;
+//                                     mask.data[ n + k + l * Chunk.SIZE ] = false;
 //                                 }
 //                             }
 //

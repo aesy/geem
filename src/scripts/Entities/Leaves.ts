@@ -1,12 +1,20 @@
-import { Mesh, MeshLambertMaterial, NearestFilter, RepeatWrapping, TextureLoader } from 'three';
 import textureAtlas from '../../assets/images/textureAtlas.png';
-import Entity from './Entity';
-import CullingChunkMesher from '../WorldGen/CullingChunkMesher';
-import Block from '../WorldGen/Block';
-import Chunk from '../WorldGen/Chunk';
+import {
+    BufferAttribute,
+    BufferGeometry,
+    Mesh,
+    MeshLambertMaterial,
+    NearestFilter,
+    RepeatWrapping,
+    TextureLoader
+} from 'three';
+import { BlockType } from '../WorldGen/Block';
+import { Chunk, ChunkMesher } from '../WorldGen/Chunk';
+import { CullingChunkMesher } from '../WorldGen/CullingChunkMesher';
+import { Entity } from './Entity';
 
-const mesher = new CullingChunkMesher([
-    Block.Type.LEAVES
+const mesher: ChunkMesher = new CullingChunkMesher([
+    BlockType.LEAVES
 ]);
 
 const loader = new TextureLoader();
@@ -17,12 +25,20 @@ texture.magFilter = NearestFilter;
 texture.minFilter = NearestFilter;
 const material = new MeshLambertMaterial({ map: texture, transparent: true });
 
-export default class Leaves extends Entity {
-    constructor(chunk: Chunk) {
+export class Leaves extends Entity {
+    public constructor(chunk: Chunk) {
         super();
 
-        const geometry = mesher.createGeometry(chunk);
+        const data = mesher.createMesh(chunk);
+
+        const geometry = new BufferGeometry();
+        geometry.setAttribute('position', new BufferAttribute(new Float32Array(data.vertices), 3));
+        geometry.setAttribute('normal', new BufferAttribute(new Float32Array(data.normals), 3));
+        geometry.setAttribute('uv', new BufferAttribute(new Float32Array(data.uvs), 2));
+        geometry.setIndex(data.indices);
+
         const mesh = new Mesh(geometry, material);
+        mesh.position.set(chunk.x * Chunk.SIZE, chunk.y * Chunk.SIZE, chunk.z * Chunk.SIZE);
 
         this.addComponent(mesh);
     }

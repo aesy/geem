@@ -1,8 +1,8 @@
-export default class Floaty {
+export class Floaty {
     public direction = 1;
     public currentOffset = 0;
 
-    constructor(
+    public constructor(
         public speed: number,
         public maxOffset: number
     ) {}

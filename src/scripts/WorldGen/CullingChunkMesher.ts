@@ -1,8 +1,7 @@
-import { BufferAttribute, BufferGeometry } from 'three';
 import { Direction } from '../Util/Direction';
-import Block from './Block';
-import Chunk from './Chunk';
-import World from './World';
+import { Coordinate3, MeshData } from '../Util/Math';
+import { BlockUtils, BlockType, Block, PositionedBlock } from './Block';
+import { Chunk, ChunkMesher } from './Chunk';
 
 const tileWidth = 16;
 const textureWidth = 256;
@@ -64,7 +63,7 @@ const Cube = {
             normal: Direction.FRONT
         },
 
-        direction(direction: { x: number; y: number; z: number }): any {
+        direction(direction: Coordinate3): any {
             switch (direction) {
                 case Direction.LEFT:
                     return Cube.Face.LEFT;
@@ -91,23 +90,23 @@ const Cube = {
     }
 };
 
-export default class CullingChunkMesher {
-    constructor(
-        private readonly blockTypes: number[]
+export class CullingChunkMesher implements ChunkMesher {
+    public constructor(
+        private readonly blockTypes: BlockType[]
     ) {}
 
-    createGeometry(chunk: Chunk): BufferGeometry {
+    public createMesh(chunk: Chunk): MeshData {
         const vertices = [];
         const normals = [];
         const uvs = [];
         const indices = [];
 
-        for (let x = 0; x < World.CHUNK_SIZE; x++) {
-            for (let y = 0; y < World.CHUNK_SIZE; y++) {
-                for (let z = 0; z < World.CHUNK_SIZE; z++) {
-                    const block = chunk.getBlock(x, y, z);
+        for (let x = 0; x < Chunk.SIZE; x++) {
+            for (let y = 0; y < Chunk.SIZE; y++) {
+                for (let z = 0; z < Chunk.SIZE; z++) {
+                    const block = chunk.getBlock({ x, y, z });
 
-                    if (block.type === Block.Type.AIR) {
+                    if (block.type === BlockType.AIR) {
                         continue;
                     }
 
@@ -116,20 +115,20 @@ export default class CullingChunkMesher {
                     }
 
                     for (const direction of Direction.all()) {
-                        const neighbor = chunk.getBlock(x + direction.x, y + direction.y, z + direction.z);
+                        const neighbor = chunk.getBlock({ x: x + direction.x, y: y + direction.y, z: z + direction.z });
                         const neighborIsSameType = block.type === neighbor.type;
 
-                        if (!Block.isOpaque(neighbor) && !neighborIsSameType) {
+                        if (!BlockUtils.isOpaque(neighbor) && !neighborIsSameType) {
                             const index = vertices.length / 3;
                             const face = Cube.Face.direction(direction);
-                            const textureIndex = block.getTextureIndex(direction);
+                            const textureIndex = CullingChunkMesher.getTextureIndex(chunk, { x, y, z, type: block.type }, direction);
 
                             for (const corner of face.corners) {
-                                if (block.type === Block.Type.WATER) {
+                                if (block.type === BlockType.WATER) {
                                     // HACK push water down a notch, it looks nice :-)
-                                    vertices.push(corner.x + block.x, corner.y + block.y - 0.2, corner.z + block.z);
+                                    vertices.push(x + corner.x, y + corner.y - 0.2, z + corner.z);
                                 } else {
-                                    vertices.push(corner.x + block.x, corner.y + block.y, corner.z + block.z);
+                                    vertices.push(x + corner.x, y + corner.y, z + corner.z);
                                 }
 
                                 normals.push(face.normal.x, face.normal.y, face.normal.z);
@@ -149,12 +148,41 @@ export default class CullingChunkMesher {
             }
         }
 
-        const geometry = new BufferGeometry();
-        geometry.setAttribute('position', new BufferAttribute(new Float32Array(vertices), 3));
-        geometry.setAttribute('normal', new BufferAttribute(new Float32Array(normals), 3));
-        geometry.setAttribute('uv', new BufferAttribute(new Float32Array(uvs), 2));
-        geometry.setIndex(indices);
+        return { vertices, normals, uvs, indices };
+    }
 
-        return geometry;
+    private static getTextureIndex(chunk: Chunk, block: PositionedBlock, direction: Coordinate3): number {
+        const adjacentBlock = CullingChunkMesher.getAdjacentBlock(chunk, block, Direction.TOP);
+
+        if (block.type === BlockType.DIRT && adjacentBlock.type === BlockType.DIRT) {
+            return 1;
+        }
+
+        switch (block.type) {
+            case BlockType.STONE:
+                return 5;
+            case BlockType.SNOW:
+                return 6;
+            case BlockType.TREE:
+                return 7;
+            case BlockType.LEAVES:
+                return 8;
+            case BlockType.DIRT:
+                if (direction === Direction.TOP) {
+                    return 0;
+                } else {
+                    return 2;
+                }
+            case BlockType.WATER:
+                return 3;
+            case BlockType.SAND:
+                return 4;
+            default:
+                throw 'Unknown or invalid block type';
+        }
+    }
+
+    private static getAdjacentBlock(chunk: Chunk, block: PositionedBlock, direction: Coordinate3): Block {
+        return chunk.getBlock({ x: block.x + direction.x, y: block.y + direction.y, z: block.z + direction.z });
     }
 }

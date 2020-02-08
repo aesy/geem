@@ -1,7 +1,7 @@
-import Entity from '../Entities/Entity';
+import { Entity } from '../Entities/Entity';
 
-export default class EntityAdded {
-    constructor(
-        public entity: Entity
+export class EntityAdded {
+    public constructor(
+        public readonly entity: Entity
     ) {}
 }

@@ -1,5 +1,5 @@
 import { Coordinate3, MeshData } from '../Util/Math';
-import { Block, PositionedBlock } from './Block';
+import { Block, BlockType, PositionedBlock } from './Block';
 import { World } from './World';
 
 export type ChunkData = Block[];
@@ -28,19 +28,11 @@ export class Chunk {
     public static readonly SIZE = 32;
     public static readonly SIZE_SQUARED = Chunk.SIZE * Chunk.SIZE;
 
-    private constructor(
+    public constructor(
         private readonly position: Coordinate3,
         private readonly world: World | null,
-        private readonly data: ChunkData
+        public data: ChunkData // TODO this shouldn't really be public and/or mutable
     ) {}
-
-    public static createWorldRelativeChunk(pos: Coordinate3, world: World, data: ChunkData = []): Chunk {
-        return new Chunk(pos, world, data);
-    }
-
-    public static createChunk(pos: Coordinate3, world: World, data: ChunkData = []): Chunk {
-        return new Chunk(pos, null, data);
-    }
 
     public get x(): number {
         return this.position.x;
@@ -70,7 +62,8 @@ export class Chunk {
     public getBlock(pos: Coordinate3): Block {
         if (pos.x < 0 || pos.x >= Chunk.SIZE || pos.y < 0 || pos.y >= Chunk.SIZE || pos.z < 0 || pos.z >= Chunk.SIZE) {
             if (!this.world) {
-                throw `Not able to get blocks outside of chunk bounding area (x: ${ pos.x }, y: ${ pos.y }, z: ${ pos.z })`;
+                return { type: BlockType.AIR };
+                // throw `Not able to get blocks outside of chunk bounding area (x: ${ pos.x }, y: ${ pos.y }, z: ${ pos.z })`;
             }
 
             const xOffset = this.position.x * Chunk.SIZE;

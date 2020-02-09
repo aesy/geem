@@ -1,7 +1,6 @@
 import { Coordinate3 } from '../Util/Math';
-import { ArchipelagoChunkGenerator } from './ArchipelagoChunkGenerator';
 import { Block } from './Block';
-import { Chunk, ChunkGenerator } from './Chunk';
+import { Chunk } from './Chunk';
 
 export type WorldData = Chunk[];
 
@@ -35,10 +34,6 @@ export class World {
     private readonly octant7: WorldData = []; // +x, -y, -z
     private readonly octant8: WorldData = []; // -x, -y, -z
 
-    public constructor(
-        private readonly chunkGenerator: ChunkGenerator = new ArchipelagoChunkGenerator()
-    ) {}
-
     public getChunk(pos: Coordinate3): Chunk {
         const positiveX = pos.x >= 0;
         const positiveY = pos.y >= 0;
@@ -69,9 +64,7 @@ export class World {
         let chunk = chunks[ index ];
 
         if (!chunk) {
-            console.log(`Generating chunk (x: ${ pos.x }, y: ${ pos.y }, z: ${ pos.z })`);
-            chunk = Chunk.createWorldRelativeChunk(pos, this, []);
-            this.chunkGenerator.generateChunk(chunk);
+            chunk = new Chunk(pos, this, []);
             chunks[ index ] = chunk;
         }
 

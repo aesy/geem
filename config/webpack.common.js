@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const WorkerPlugin = require('worker-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
@@ -11,7 +12,8 @@ module.exports = {
     output: {
         path: path.join(process.cwd(), 'dist'),
         filename: '[name].[hash].js',
-        publicPath: '/'
+        publicPath: '/',
+        globalObject: 'self'
     },
     resolve: {
         extensions: ['.ts', '.js'],
@@ -26,7 +28,9 @@ module.exports = {
             {
                 enforce: 'pre',
                 test: /\.ts$/,
-                exclude: /node_modules/,
+                exclude: [
+                    path.join(process.cwd(), 'src', 'scripts', 'Worker')
+                ],
                 use: {
                     loader: 'eslint-loader'
                 }
@@ -71,6 +75,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: 'index.html',
             inject: true
-        })
+        }),
+        new WorkerPlugin()
     ]
 };

@@ -1,16 +1,16 @@
 import { Entity } from '../Entities/Entity';
-import { EventBus } from '../Event/EventBus';
+import { Game } from '../Game/Game';
 
 export class System {
     public appliesTo(entity: Entity): boolean {
         return false;
     }
 
-    public initialize(events: EventBus): void {
+    public initialize(game: Game): void {
         // Intentionally left empty
     }
 
-    public update(dt: number, entities: Entity[], events: EventBus): void {
+    public update(dt: number, entities: Entity[], game: Game): void {
         throw new Error('Not implemented');
     }
 }

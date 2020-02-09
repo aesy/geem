@@ -24,6 +24,8 @@ export class ChunkUtils {
     }
 }
 
+const air = { type: BlockType.AIR };
+
 export class Chunk {
     public static readonly SIZE = 32;
     public static readonly SIZE_SQUARED = Chunk.SIZE * Chunk.SIZE;
@@ -46,7 +48,15 @@ export class Chunk {
         return this.position.z;
     }
 
+    public isEmpty(): boolean {
+        return !this.data.length;
+    }
+
     public setBlock(pos: Coordinate3, block: Block): void {
+        if (block.type === BlockType.AIR) {
+            return;
+        }
+
         if (pos.x < 0 || pos.x >= Chunk.SIZE || pos.y < 0 || pos.y >= Chunk.SIZE || pos.z < 0 || pos.z >= Chunk.SIZE) {
             if (this.world) {
                 // Outside the chunk, need to set in the world... should we?
@@ -62,8 +72,7 @@ export class Chunk {
     public getBlock(pos: Coordinate3): Block {
         if (pos.x < 0 || pos.x >= Chunk.SIZE || pos.y < 0 || pos.y >= Chunk.SIZE || pos.z < 0 || pos.z >= Chunk.SIZE) {
             if (!this.world) {
-                return { type: BlockType.AIR };
-                // throw `Not able to get blocks outside of chunk bounding area (x: ${ pos.x }, y: ${ pos.y }, z: ${ pos.z })`;
+                return air;
             }
 
             const xOffset = this.position.x * Chunk.SIZE;
@@ -75,6 +84,6 @@ export class Chunk {
 
         const index = pos.x + pos.y * Chunk.SIZE + pos.z * Chunk.SIZE_SQUARED;
 
-        return this.data[ index ];
+        return this.data[ index ] || air;
     }
 }

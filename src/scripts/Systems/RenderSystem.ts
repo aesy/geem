@@ -2,21 +2,19 @@ import {
     Object3D,
     Scene,
     WebGLRenderer,
-    PerspectiveCamera,
     VSMShadowMap,
-    Renderer
 } from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Entity } from '../Entities/Entity';
+import { EntityRemoved } from '../Event/EntityRemoved';
+import { Game } from '../Game/Game';
 import { System } from './System';
 
 export class RenderSystem extends System {
-    private readonly scene: Scene;
-    private readonly renderer: Renderer;
-    private readonly camera: PerspectiveCamera;
-    private readonly controls: OrbitControls;
+    public readonly renderer: WebGLRenderer;
 
-    public constructor(cameraTargetX: number, cameraTargetY: number, cameraTargetZ: number) {
+    private readonly scene: Scene;
+
+    public constructor() {
         super();
 
         const { innerHeight, innerWidth } = window;
@@ -30,47 +28,31 @@ export class RenderSystem extends System {
         renderer.setSize(innerWidth, innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
-        addEventListener('resize', this.onResize.bind(this));
-
-        const camera = new PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 1000);
-        // const camera = new OrthographicCamera(innerWidth / -10, innerWidth / 10, innerHeight / 10, innerHeight /
-        // -10, 0, 1000);
-        camera.position.set(0, 60, 0);
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.target.set(cameraTargetX, cameraTargetY, cameraTargetZ);
-        camera.lookAt(cameraTargetX, cameraTargetY, cameraTargetZ);
 
         this.scene = scene;
         this.renderer = renderer;
-        this.camera = camera;
-        this.controls = controls;
+    }
+
+    public initialize(game: Game): void {
+        game.events.register(EntityRemoved, (event: EntityRemoved) => {
+            const entity = event.entity;
+            const object = entity.getComponent(Object3D);
+
+            this.scene.remove(object);
+        });
     }
 
     public appliesTo(entity: Entity): boolean {
         return entity.hasComponent(Object3D);
     }
 
-    public update(dt: number, entities: Entity[]): void {
+    public update(dt: number, entities: Entity[], game: Game): void {
         for (const entity of entities) {
             const object = entity.getComponent(Object3D);
 
             this.scene.add(object);
         }
 
-        this.renderer.render(this.scene, this.camera);
-    }
-
-    private onResize(): void {
-        const { innerHeight, innerWidth } = window;
-
-        this.renderer.setSize(innerWidth, innerHeight);
-        this.camera.aspect = innerWidth / innerHeight;
-
-        // this.camera.left = innerWidth / -10;
-        // this.camera.right = innerWidth / 10;
-        // this.camera.top = innerHeight / 10;
-        // this.camera.bottom = innerHeight / -10;
-
-        this.camera.updateProjectionMatrix();
+        this.renderer.render(this.scene, game.camera);
     }
 }

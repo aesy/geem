@@ -83,6 +83,11 @@ export class BorrealForestChunkGenerator implements ChunkGenerator {
         const yOffset = chunk.y * Chunk.SIZE;
         const zOffset = chunk.z * Chunk.SIZE;
 
+        if (yOffset > 2 * amplitude) {
+            // We are so far above the ground that we can say for certain all blocks will be air
+            return;
+        }
+
         for (let blockX = 0; blockX < Chunk.SIZE; blockX++) {
             for (let blockY = 0; blockY < Chunk.SIZE; blockY++) {
                 for (let blockZ = 0; blockZ < Chunk.SIZE; blockZ++) {
@@ -125,7 +130,7 @@ export class BorrealForestChunkGenerator implements ChunkGenerator {
                     } else if (worldY <= 6) {
                         type = BlockType.WATER;
                     } else {
-                        type = BlockType.AIR;
+                        continue;
                     }
 
                     chunk.setBlock({ x: blockX, y: blockY, z: blockZ }, { type });

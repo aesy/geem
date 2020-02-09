@@ -21,7 +21,8 @@ export class WorldGenerator extends System {
 
     public constructor(
         private readonly world: World,
-        private readonly drawDistance: number
+        private readonly drawDistance: number,
+        private readonly moving: boolean = false
     ) {
         super();
 
@@ -99,8 +100,10 @@ export class WorldGenerator extends System {
             }
         }
 
-        game.camera.position.x += dt * 20;
-        game.camera.rotateOnWorldAxis(up, dt * Math.PI / 2 / 5);
+        if (this.moving) {
+            game.camera.position.x += dt * 20;
+            game.camera.rotateOnWorldAxis(up, dt * Math.PI / 2 / 5);
+        }
     }
 
     private onNewMesh(event: MessageEvent): void {

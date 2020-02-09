@@ -18,7 +18,7 @@ const renderSystem = new RenderSystem();
 const game = new Game(worldCenter, 0, worldCenter, renderSystem.renderer);
 game.addSystem(renderSystem);
 game.addSystem(new FrameRatePrinter());
-game.addSystem(new WorldGenerator(world, drawDistance));
+game.addSystem(new WorldGenerator(world, drawDistance, true));
 game.addEntity(new DirectionalLight(worldCenter * 2, 400, worldCenter * 2, 1));
 game.addEntity(new AmbientLight(0.2));
 

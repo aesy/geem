@@ -4,7 +4,7 @@ const Merge = require('webpack-merge');
 const CommonConfig = require('./webpack.common.js');
 
 module.exports = Merge(CommonConfig, {
-    devtool: 'eval-source-map ',
+    devtool: 'eval-source-map',
     plugins: [
         new webpack.HotModuleReplacementPlugin()
     ],

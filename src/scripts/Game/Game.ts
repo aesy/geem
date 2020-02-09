@@ -1,29 +1,30 @@
-import EntityAdded from '../Event/EntityAdded';
-import EventBus from '../Event/EventBus';
+import { Entity } from '../Entities/Entity';
+import { EntityAdded } from '../Event/EntityAdded';
+import { EventBus } from '../Event/EventBus';
+import { System } from '../Systems/System';
 
-export default class Game {
-    constructor() {
-        this.entities = [];
-        this.systems = [];
-        this.lastTimestamp = 0;
-        this.events = new EventBus();
-    }
+export class Game {
+    public readonly events = new EventBus();
 
-    addSystem(system) {
+    private readonly entities: Entity[] = [];
+    private readonly systems: System[] = [];
+    private lastTimestamp = 0;
+
+    public addSystem(system: System): void {
         this.systems.push(system);
         system.initialize(this.events);
     }
 
-    addEntity(entity) {
+    public addEntity(entity: Entity): void {
         this.entities.push(entity);
         this.events.emit(new EntityAdded(entity));
     }
 
-    start() {
+    public start(): void {
         requestAnimationFrame(this.update.bind(this));
     }
 
-    update(currentTimestamp) {
+    public update(currentTimestamp: number): void {
         const dt = (currentTimestamp - this.lastTimestamp) / 1000;
         this.lastTimestamp = currentTimestamp;
 

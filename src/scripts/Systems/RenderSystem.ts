@@ -3,14 +3,22 @@ import {
     Scene,
     WebGLRenderer,
     PerspectiveCamera,
-    VSMShadowMap
+    VSMShadowMap,
+    Renderer
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import System from './System.js';
+import { Entity } from '../Entities/Entity';
+import { System } from './System';
 
-export default class RenderSystem extends System {
-    constructor(cameraTargetX, cameraTargetY, cameraTargetZ) {
+export class RenderSystem extends System {
+    private readonly scene: Scene;
+    private readonly renderer: Renderer;
+    private readonly camera: PerspectiveCamera;
+    private readonly controls: OrbitControls;
+
+    public constructor(cameraTargetX: number, cameraTargetY: number, cameraTargetZ: number) {
         super();
+
         const { innerHeight, innerWidth } = window;
 
         const scene = new Scene();
@@ -25,7 +33,8 @@ export default class RenderSystem extends System {
         addEventListener('resize', this.onResize.bind(this));
 
         const camera = new PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 1000);
-        // const camera = new OrthographicCamera(innerWidth / -10, innerWidth / 10, innerHeight / 10, innerHeight / -10, 0, 1000);
+        // const camera = new OrthographicCamera(innerWidth / -10, innerWidth / 10, innerHeight / 10, innerHeight /
+        // -10, 0, 1000);
         camera.position.set(0, 60, 0);
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.target.set(cameraTargetX, cameraTargetY, cameraTargetZ);
@@ -37,11 +46,11 @@ export default class RenderSystem extends System {
         this.controls = controls;
     }
 
-    appliesTo(entity) {
+    public appliesTo(entity: Entity): boolean {
         return entity.hasComponent(Object3D);
     }
 
-    update(dt, entities) {
+    public update(dt: number, entities: Entity[]): void {
         for (const entity of entities) {
             const object = entity.getComponent(Object3D);
 
@@ -51,7 +60,7 @@ export default class RenderSystem extends System {
         this.renderer.render(this.scene, this.camera);
     }
 
-    onResize() {
+    private onResize(): void {
         const { innerHeight, innerWidth } = window;
 
         this.renderer.setSize(innerWidth, innerHeight);

@@ -1,12 +1,12 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
     context: path.join(process.cwd(), 'src'),
     entry: {
-        app: './index.js'
+        app: './index.ts'
     },
     output: {
         path: path.join(process.cwd(), 'dist'),
@@ -14,6 +14,7 @@ module.exports = {
         publicPath: '/'
     },
     resolve: {
+        extensions: ['.ts', '.js'],
         modules: [
             path.join(process.cwd(), 'src', 'scripts'),
             path.join(process.cwd(), 'src', 'assets'),
@@ -24,28 +25,18 @@ module.exports = {
         rules: [
             {
                 enforce: 'pre',
-                test: /\.js$/,
+                test: /\.ts$/,
                 exclude: /node_modules/,
                 use: {
                     loader: 'eslint-loader'
                 }
             }, {
-                test: /\.js$/,
+                test: /\.(js|ts)$/,
                 use: {
                     loader: 'babel-loader'
                 }
             }, {
-                test: /\.html$/,
-                use: [
-                    {
-                        loader: 'html-loader',
-                        options: {
-                            attrs: [ ':src' ]
-                        }
-                    }
-                ]
-            }, {
-                test: /\.(css|scss$)/,
+                test: /\.(css|scss)$/,
                 use: [
                     MiniCssExtractPlugin.loader,
                     {
@@ -61,7 +52,7 @@ module.exports = {
                     }
                 ]
             }, {
-                test: /\.(ico|png|jpg|jpeg|gif|svg|mp4|mov|mp3|ogg|avi)$/,
+                test: /\.(png|jpg|jpeg|gif|mp3|wav)$/,
                 use: [
                     {
                         loader: 'file-loader',
@@ -75,8 +66,8 @@ module.exports = {
         ]
     },
     plugins: [
-        new CleanWebpackPlugin([ 'dist' ], { root: process.cwd() }),
-        new MiniCssExtractPlugin({ filename: 'styles.css' }),
+        new CleanWebpackPlugin(),
+        new MiniCssExtractPlugin({ filename: 'styles.[hash].css' }),
         new HtmlWebpackPlugin({
             template: 'index.html',
             inject: true

@@ -1,17 +1,14 @@
 import { Object3D } from 'three';
-import System from './System';
-import Rotate from '../Components/Rotate';
+import { Rotate } from '../Components/Rotate';
+import { Entity } from '../Entities/Entity';
+import { System } from './System';
 
-export default class RotateSystem extends System {
-    constructor() {
-        super();
-    }
-
-    appliesTo(entity) {
+export class RotateSystem extends System {
+    public appliesTo(entity: Entity): boolean {
         return entity.hasComponents(Object3D, Rotate);
     }
 
-    update(dt, entities) {
+    public update(dt: number, entities: Entity[]): void {
         for (const entity of entities) {
             const rotation = entity.getComponent(Rotate);
             const object = entity.getComponent(Object3D);

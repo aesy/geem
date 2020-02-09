@@ -1,13 +1,14 @@
 import { Object3D } from 'three';
-import Floaty from '../Components/Floaty';
-import System from './System';
+import { Floaty } from '../Components/Floaty';
+import { Entity } from '../Entities/Entity';
+import { System } from './System';
 
-export default class FloatSystem extends System {
-    appliesTo(entity) {
+export class FloatSystem extends System {
+    public appliesTo(entity: Entity): boolean {
         return entity.hasComponents(Floaty, Object3D);
     }
 
-    update(dt, entities) {
+    public update(dt: number, entities: Entity[]): void {
         for (const entity of entities) {
             const floaty = entity.getComponent(Floaty);
             const object = entity.getComponent(Object3D);

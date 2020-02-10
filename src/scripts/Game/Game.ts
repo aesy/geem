@@ -9,8 +9,8 @@ import { System } from '../Systems/System';
 export class Game {
     public readonly events = new EventBus();
     public readonly camera: PerspectiveCamera;
+    public readonly controls: OrbitControls;
 
-    private readonly controls: OrbitControls;
     private readonly entities: Entity[] = [];
     private readonly systems: System[] = [];
     private lastTimestamp = 0;
@@ -23,10 +23,7 @@ export class Game {
     ) {
         const camera = new PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 1000);
         // const camera = new OrthographicCamera(innerWidth / -10, innerWidth / 10, innerHeight / 10, innerHeight / -10, 0, 1000);
-        camera.position.set(0, 60, 0);
         const controls = new OrbitControls(camera, renderer.domElement);
-        controls.target.set(cameraTargetX, cameraTargetY, cameraTargetZ);
-        camera.lookAt(cameraTargetX, cameraTargetY, cameraTargetZ);
 
         addEventListener('resize', this.onResize.bind(this));
 
@@ -60,6 +57,7 @@ export class Game {
     public update(currentTimestamp: number): void {
         const dt = (currentTimestamp - this.lastTimestamp) / 1000;
         this.lastTimestamp = currentTimestamp;
+        this.controls.update();
 
         for (const system of this.systems) {
             const filteredEntities = this.entities.filter(system.appliesTo);

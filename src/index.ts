@@ -12,22 +12,26 @@ import { Player } from './scripts/Entities/Player';
 import { CameraFollowSystem } from './scripts/Systems/CameraFollowSystem';
 import { GravitySystem } from './scripts/Systems/GravitySystem';
 import { ControlSystem } from './scripts/Systems/ControlSystem';
+import { VelocitySystem } from './scripts/Systems/VelocitySystem';
+import { TerrainCollisionSystem } from './scripts/Systems/TerrainCollisionSystem';
 
-const drawDistance = 4;
+const drawDistance = 1;
 const world = new World();
 const worldCenter = drawDistance * Chunk.SIZE / 2;
 
 const renderSystem = new RenderSystem();
 
 const game = new Game(worldCenter, 0, worldCenter, renderSystem.renderer);
-game.addSystem(renderSystem);
 // game.addSystem(new FrameRatePrinter());
 game.addSystem(new WorldGenerator(world, drawDistance, false));
+game.addSystem(new ControlSystem(world));
 game.addSystem(new GravitySystem(world));
-game.addSystem(new ControlSystem());
+game.addSystem(new VelocitySystem(world));
+game.addSystem(new TerrainCollisionSystem(world));
 game.addSystem(new CameraFollowSystem());
 game.addEntity(new DirectionalLight(worldCenter * 2, 400, worldCenter * 2, 1));
 game.addEntity(new AmbientLight(0.2));
 game.addEntity(new Player());
+game.addSystem(renderSystem);
 
 game.start();

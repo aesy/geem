@@ -1,28 +1,25 @@
-import { Object3D, Vector3, Box3 } from 'three';
-import { Physical } from '../Components/Physical';
+import { Object3D, Vector3 } from 'three';
+import { Movable } from '../Components/Movable';
 import { Entity } from '../Entities/Entity';
 import { System } from './System';
 import { Game } from '../Game/Game';
 import { World } from '../WorldGen/World';
-import { BlockUtils } from '../WorldGen/Block';
-import { Movable } from '../Components/Movable';
 
-export class GravitySystem extends System {
+export class VelocitySystem extends System {
     public constructor(private readonly world: World) {
         super();
     }
 
     public appliesTo(entity: Entity): boolean {
-        return entity.hasComponents(Physical, Movable);
+        return entity.hasComponents(Movable, Object3D);
     }
 
     public update(dt: number, entities: Entity[], game: Game): void {
         for (const entity of entities) {
-            const weight = entity.getComponent(Physical).value;
+            const object = entity.getComponent(Object3D);
             const velocity = entity.getComponent(Movable).velocity;
-            const gravity = new Vector3(0, -1, 0);
-
-            velocity.add(gravity.multiplyScalar(weight * dt));
+            
+            object.position.add(velocity.clone().multiplyScalar(dt)); 
         }
     }
 }

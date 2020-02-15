@@ -9,9 +9,8 @@ import { RenderSystem } from './scripts/Systems/RenderSystem';
 import { WorldLoader } from './scripts/Systems/WorldLoader';
 import { WorldUnloader } from './scripts/Systems/WorldUnloader';
 import { Chunk } from './scripts/WorldGen/Chunk';
-import { AsyncChunkDataGeneratorScheduler } from './scripts/WorldGen/ChunkGeneratorScheduler';
-import { AsyncChunkMeshGeneratorScheduler } from './scripts/WorldGen/ChunkMeshGeneratorScheduler';
-import { DEFAULT_CHUNK_GENERATOR, DEFAULT_CHUNK_MESHER } from './scripts/WorldGen/Defaults';
+import { OffloadedChunkDataGeneratorScheduler } from './scripts/WorldGen/ChunkGeneratorScheduler';
+import { OffloadedChunkMeshGeneratorScheduler } from './scripts/WorldGen/ChunkMeshGeneratorScheduler';
 import { World } from './scripts/WorldGen/World';
 import { Player } from './scripts/Entities/Player';
 import { CameraFollowSystem } from './scripts/Systems/CameraFollowSystem';
@@ -20,12 +19,12 @@ import { ControlSystem } from './scripts/Systems/ControlSystem';
 import { VelocitySystem } from './scripts/Systems/VelocitySystem';
 import { TerrainCollisionSystem } from './scripts/Systems/TerrainCollisionSystem';
 
-const drawDistance = 1;
+const drawDistance = 3;
 const world = new World();
 const worldCenter = drawDistance * Chunk.SIZE / 2;
 
-const dataScheduler = new AsyncChunkDataGeneratorScheduler(DEFAULT_CHUNK_GENERATOR, -1, 2);
-const meshScheduler = new AsyncChunkMeshGeneratorScheduler(DEFAULT_CHUNK_MESHER, -1, 1);
+const dataScheduler = new OffloadedChunkDataGeneratorScheduler(-1, 5);
+const meshScheduler = new OffloadedChunkMeshGeneratorScheduler(-1, 5);
 
 const renderSystem = new RenderSystem();
 

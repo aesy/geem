@@ -39,7 +39,7 @@ export class WorldLoader extends System {
         for (let x = cameraPosition.x - this.drawDistance; x < cameraPosition.x + this.drawDistance + 1; x++) {
             for (let y = cameraPosition.y - this.drawDistance; y < cameraPosition.y + this.drawDistance + 1; y++) {
                 for (let z = cameraPosition.z - this.drawDistance; z < cameraPosition.z + this.drawDistance + 1; z++) {
-                    const chunk = this.world.getChunk({ x, y: 0, z });
+                    const chunk = this.world.getChunk({ x, y, z });
 
                     if (!this.generated.has(chunk)) {
                         toBeGenerated.push(chunk);

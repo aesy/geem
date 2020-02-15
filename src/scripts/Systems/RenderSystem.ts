@@ -13,6 +13,7 @@ export class RenderSystem extends System {
     public readonly renderer: WebGLRenderer;
 
     private readonly scene: Scene;
+    private readonly deleted: Object3D[] = [];
 
     public constructor() {
         super();
@@ -38,7 +39,7 @@ export class RenderSystem extends System {
             const entity = event.entity;
             const object = entity.getComponent(Object3D);
 
-            this.scene.remove(object);
+            this.deleted.push(object);
         });
     }
 
@@ -47,6 +48,12 @@ export class RenderSystem extends System {
     }
 
     public update(dt: number, entities: Entity[], game: Game): void {
+        const deleted = this.deleted.pop();
+
+        if (deleted) {
+            this.scene.remove(deleted);
+        }
+
         for (const entity of entities) {
             const object = entity.getComponent(Object3D);
 

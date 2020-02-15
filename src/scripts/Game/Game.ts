@@ -16,9 +16,6 @@ export class Game {
     private lastTimestamp = 0;
 
     public constructor(
-        cameraTargetX: number,
-        cameraTargetY: number,
-        cameraTargetZ: number,
         private readonly renderer: WebGLRenderer
     ) {
         const camera = new PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 1000);

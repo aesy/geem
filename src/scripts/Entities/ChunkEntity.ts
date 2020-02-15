@@ -8,7 +8,8 @@ import {
     RepeatWrapping,
     TextureLoader
 } from 'three';
-import { Coordinate3, MeshData } from '../Util/Math';
+import { MeshData } from '../Util/Math';
+import { Chunk } from '../WorldGen/Chunk';
 import { Entity } from './Entity';
 
 const loader = new TextureLoader();
@@ -19,8 +20,11 @@ texture.magFilter = NearestFilter;
 texture.minFilter = NearestFilter;
 const material = new MeshLambertMaterial({ map: texture });
 
-export class MeshEntity extends Entity {
-    public constructor(data: MeshData, offset: Coordinate3) {
+export class ChunkEntity extends Entity {
+    public constructor(
+        public readonly chunk: Chunk,
+        data: MeshData
+    ) {
         super();
 
         const geometry = new BufferGeometry();
@@ -30,7 +34,7 @@ export class MeshEntity extends Entity {
         geometry.setIndex(data.indices);
 
         const mesh = new Mesh(geometry, material);
-        mesh.position.set(offset.x, offset.y, offset.z);
+        mesh.position.set(chunk.x * Chunk.SIZE, chunk.y * Chunk.SIZE, chunk.z * Chunk.SIZE);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
 

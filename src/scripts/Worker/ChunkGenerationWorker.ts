@@ -1,8 +1,6 @@
 import { Coordinate3 } from '../Util/Math';
-import { ArchipelagoChunkGenerator } from '../WorldGen/ArchipelagoChunkGenerator';
-import { Chunk, ChunkData, ChunkGenerator } from '../WorldGen/Chunk';
-
-const chunkGenerator: ChunkGenerator = new ArchipelagoChunkGenerator();
+import { Chunk, ChunkData } from '../WorldGen/Chunk';
+import { DEFAULT_CHUNK_GENERATOR } from '../WorldGen/Defaults';
 
 onmessage = (event: MessageEvent): void => {
     const { x, y, z }: Coordinate3 = event.data;
@@ -11,7 +9,7 @@ onmessage = (event: MessageEvent): void => {
     console.log(`Creating chunk data: x: ${ x }, y: ${ y }, z: ${ z }`);
 
     const chunk = new Chunk({ x, y, z }, null, chunkData);
-    chunkGenerator.generateChunk(chunk);
+    DEFAULT_CHUNK_GENERATOR.generateChunk(chunk);
 
     (self as unknown as BroadcastChannel)
         .postMessage({ x, y, z, chunkData: chunk.data });

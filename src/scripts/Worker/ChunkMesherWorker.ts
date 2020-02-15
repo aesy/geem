@@ -1,17 +1,6 @@
 import { Coordinate3 } from '../Util/Math';
-import { BlockType } from '../WorldGen/Block';
-import { Chunk, ChunkData, ChunkMesher } from '../WorldGen/Chunk';
-import { CullingChunkMesher } from '../WorldGen/CullingChunkMesher';
-
-const mesher: ChunkMesher = new CullingChunkMesher([
-    BlockType.DIRT,
-    BlockType.WATER,
-    BlockType.SAND,
-    BlockType.STONE,
-    BlockType.SNOW,
-    BlockType.TREE,
-    BlockType.LEAVES
-]);
+import { Chunk, ChunkData } from '../WorldGen/Chunk';
+import { DEFAULT_CHUNK_MESHER } from '../WorldGen/Defaults';
 
 onmessage = (event: MessageEvent): void => {
     const { x, y, z }: Coordinate3 = event.data;
@@ -20,7 +9,7 @@ onmessage = (event: MessageEvent): void => {
     console.log(`Creating chunk mesh: x: ${ x }, y: ${ y }, z: ${ z }`);
 
     const chunk = new Chunk({ x, y, z }, null, chunkData);
-    const meshData = mesher.createMesh(chunk);
+    const meshData = DEFAULT_CHUNK_MESHER.createMesh(chunk);
 
     (self as unknown as BroadcastChannel)
         .postMessage({ x, y, z, meshData });

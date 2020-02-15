@@ -1,6 +1,6 @@
 import { Direction } from '../Util/Direction';
 import { Coordinate3, MeshData } from '../Util/Math';
-import { BlockUtils, BlockType, Block, PositionedBlock } from './Block';
+import { Block, BlockType, BlockUtils, PositionedBlock } from './Block';
 import { Chunk, ChunkMesher } from './Chunk';
 
 const tileWidth = 16;
@@ -114,6 +114,8 @@ export class CullingChunkMesher implements ChunkMesher {
                         continue;
                     }
 
+                    const topBlock = chunk.getBlock({ x: x + Direction.TOP.x, y: y + Direction.TOP.y, z: z + Direction.TOP.z });
+
                     for (const direction of Direction.all()) {
                         const neighbor = chunk.getBlock({ x: x + direction.x, y: y + direction.y, z: z + direction.z });
                         const neighborIsSameType = block.type === neighbor.type;
@@ -124,9 +126,9 @@ export class CullingChunkMesher implements ChunkMesher {
                             const textureIndex = CullingChunkMesher.getTextureIndex(chunk, { x, y, z, type: block.type }, direction);
 
                             for (const corner of face.corners) {
-                                if (block.type === BlockType.WATER) {
+                                if (block.type === BlockType.WATER && topBlock.type === BlockType.AIR) {
                                     // HACK push water down a notch, it looks nice :-)
-                                    vertices.push(x + corner.x, y + corner.y - 0.2, z + corner.z);
+                                    vertices.push(x + corner.x, y + Math.min(0.8, corner.y), z + corner.z);
                                 } else {
                                     vertices.push(x + corner.x, y + corner.y, z + corner.z);
                                 }

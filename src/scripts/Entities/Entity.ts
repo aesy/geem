@@ -1,4 +1,4 @@
-type Constructor<T> = new (...args: any[]) => T;
+import { Constructor } from '../Util/Type';
 
 export class Entity {
     private readonly components: object[] = [];

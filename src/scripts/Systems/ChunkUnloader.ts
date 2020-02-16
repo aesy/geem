@@ -1,11 +1,11 @@
-import { ChunkEntity } from '../Entities/ChunkEntity';
+import { ChunkMesh } from '../Entities/ChunkMesh';
 import { Entity } from '../Entities/Entity';
 import { ChunkUnloaded } from '../Event/ChunkUnloaded';
 import { Game } from '../Game/Game';
 import { World, WorldUtils } from '../WorldGen/World';
 import { System } from './System';
 
-export class WorldUnloader extends System {
+export class ChunkUnloader extends System {
     public constructor(
         private readonly world: World,
         private readonly maxDistance: number = 1
@@ -14,14 +14,14 @@ export class WorldUnloader extends System {
     }
 
     public appliesTo(entity: Entity): boolean {
-        return entity instanceof ChunkEntity;
+        return entity instanceof ChunkMesh;
     }
 
     public update(dt: number, entities: Entity[], game: Game): void {
         // TODO only run whenever player has moved x amount of blocks
         // TODO load based on player rather than camera
         const cameraPosition = WorldUtils.worldToChunk(game.camera.position);
-        const chunks = entities.map(entity => (entity as ChunkEntity).chunk);
+        const chunks = entities.map(entity => (entity as ChunkMesh).chunk);
 
         for (const chunk of chunks) {
             if (Math.abs(chunk.x - cameraPosition.x) > this.maxDistance ||

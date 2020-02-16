@@ -6,11 +6,9 @@ import { Game } from './scripts/Game/Game';
 import { ChunkUpdater } from './scripts/Systems/ChunkUpdater';
 import { DigSystem } from './scripts/Systems/DigSystem';
 import { RenderSystem } from './scripts/Systems/RenderSystem';
-import { WorldLoader } from './scripts/Systems/WorldLoader';
-import { WorldUnloader } from './scripts/Systems/WorldUnloader';
+import { ChunkLoader } from './scripts/Systems/ChunkLoader';
+import { ChunkUnloader } from './scripts/Systems/ChunkUnloader';
 import { Chunk } from './scripts/WorldGen/Chunk';
-import { OffloadedChunkDataGeneratorScheduler } from './scripts/WorldGen/ChunkGeneratorScheduler';
-import { OffloadedChunkMeshGeneratorScheduler } from './scripts/WorldGen/ChunkMeshGeneratorScheduler';
 import { World } from './scripts/WorldGen/World';
 import { Player } from './scripts/Entities/Player';
 import { CameraFollowSystem } from './scripts/Systems/CameraFollowSystem';
@@ -23,9 +21,6 @@ const drawDistance = 3;
 const world = new World();
 const worldCenter = drawDistance * Chunk.SIZE / 2;
 
-const dataScheduler = new OffloadedChunkDataGeneratorScheduler(-1, 5);
-const meshScheduler = new OffloadedChunkMeshGeneratorScheduler(-1, 5);
-
 const renderSystem = new RenderSystem();
 
 const game = new Game(renderSystem.renderer);
@@ -36,9 +31,9 @@ game.addSystem(new VelocitySystem(world));
 game.addSystem(new TerrainCollisionSystem(world));
 game.addSystem(new CameraFollowSystem());
 game.addSystem(new DigSystem(world));
-game.addSystem(new WorldLoader(world, dataScheduler, drawDistance));
-game.addSystem(new WorldUnloader(world, drawDistance + 1));
-game.addSystem(new ChunkUpdater(world, meshScheduler));
+game.addSystem(new ChunkUnloader(world, drawDistance + 1));
+game.addSystem(new ChunkLoader(world, drawDistance));
+game.addSystem(new ChunkUpdater(world));
 game.addEntity(new DirectionalLight(worldCenter * 2, 400, worldCenter * 2, 1));
 game.addEntity(new AmbientLight(0.2));
 game.addEntity(new Player());

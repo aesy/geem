@@ -4,19 +4,21 @@ import { Player } from '../Entities/Player';
 import { ChunkLoaded } from '../Event/ChunkLoaded';
 import { Game } from '../Game/Game';
 import { Coordinate3 } from '../Util/Math';
+import { Comparator } from '../Util/Type';
+import { ArchipelagoChunkGenerator } from '../WorldGen/ArchipelagoChunkGenerator';
 import { Chunk } from '../WorldGen/Chunk';
-import { ChunkGeneratorScheduler } from '../WorldGen/ChunkGeneratorScheduler';
+import { ChunkGeneratorScheduler, OffloadedChunkDataGeneratorScheduler } from '../WorldGen/ChunkGeneratorScheduler';
 import { World, WorldUtils } from '../WorldGen/World';
 import { System } from './System';
 
-type Comparator<T> = (first: T, second: T) => number;
+const scheduler: ChunkGeneratorScheduler = new OffloadedChunkDataGeneratorScheduler(
+    ArchipelagoChunkGenerator, [], -1, 5);
 
-export class WorldLoader extends System {
+export class ChunkLoader extends System {
     private readonly generated: Set<Chunk>;
 
     public constructor(
         private readonly world: World,
-        private readonly dataScheduler: ChunkGeneratorScheduler,
         private readonly drawDistance: number = 1
     ) {
         super();
@@ -54,17 +56,17 @@ export class WorldLoader extends System {
             this.generated.add(chunk);
             console.log('Loading chunk', chunk);
 
-            this.dataScheduler.schedule(chunk)
+            scheduler.schedule(chunk)
                 .then(() => {
                     game.events.emit(new ChunkLoaded(chunk));
                 })
-                .catch(console.log);
+                .catch(console.error);
         }
     }
 
     private comparator(position: Coordinate3): Comparator<Chunk> {
         return (chunk1: Chunk, chunk2: Chunk): number => {
-            return WorldLoader.distanceSquared(chunk1, position) - WorldLoader.distanceSquared(chunk2, position);
+            return ChunkLoader.distanceSquared(chunk1, position) - ChunkLoader.distanceSquared(chunk2, position);
         };
     }
 

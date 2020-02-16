@@ -1,5 +1,6 @@
 import { Deferred } from '../Util/Async';
 import { Coordinate3 } from '../Util/Math';
+import { Constructor } from '../Util/Type';
 import { Chunk, ChunkData, ChunkGenerator } from './Chunk';
 
 export interface ChunkGeneratorScheduler {
@@ -8,7 +9,7 @@ export interface ChunkGeneratorScheduler {
 
 export class InstantChunkDataGeneratorScheduler implements ChunkGeneratorScheduler {
     public constructor(
-        private readonly chunkGenerator: ChunkGenerator,
+        private readonly chunkGenerator: ChunkGenerator
     ) {}
 
     public schedule(chunk: Chunk): Promise<ChunkData> {
@@ -57,7 +58,7 @@ export class AsyncChunkDataGeneratorScheduler implements ChunkGeneratorScheduler
     }
 
     private next(): void {
-        for (const [chunk, deferred] of this.map) {
+        for (const [ chunk, deferred ] of this.map) {
             if (this.running >= this.concurrencyLimit) {
                 return;
             }
@@ -81,6 +82,8 @@ export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorSched
     private running: number;
 
     public constructor(
+        private readonly chunkGenerator: Constructor<ChunkGenerator>,
+        private readonly args: any[],
         private readonly queueSize: number = -1,
         private readonly concurrencyLimit: number = 3
     ) {
@@ -127,7 +130,14 @@ export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorSched
             }
 
             this.running++;
-            this.worker.postMessage({ x: chunk.x, y: chunk.y, z: chunk.z, chunkData: chunk.data });
+            this.worker.postMessage({
+                x: chunk.x,
+                y: chunk.y,
+                z: chunk.z,
+                chunkData: chunk.data,
+                impl: this.chunkGenerator.name,
+                args: this.args
+            });
         }
     }
 
@@ -137,7 +147,6 @@ export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorSched
         const chunk = this.findChunk({ x, y, z });
 
         if (!chunk) {
-            // TODO log warn
             debugger;
             return;
         }

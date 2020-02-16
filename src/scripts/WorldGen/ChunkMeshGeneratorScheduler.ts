@@ -1,5 +1,6 @@
 import { Deferred } from '../Util/Async';
 import { Coordinate3, MeshData } from '../Util/Math';
+import { Constructor } from '../Util/Type';
 import { Chunk, ChunkMesher } from './Chunk';
 
 export interface ChunkMeshGeneratorScheduler {
@@ -8,7 +9,7 @@ export interface ChunkMeshGeneratorScheduler {
 
 export class InstantChunkMeshGeneratorScheduler implements ChunkMeshGeneratorScheduler {
     public constructor(
-        private readonly mesher: ChunkMesher,
+        private readonly mesher: ChunkMesher
     ) {}
 
     public schedule(chunk: Chunk): Promise<MeshData> {
@@ -81,6 +82,8 @@ export class OffloadedChunkMeshGeneratorScheduler implements ChunkMeshGeneratorS
     private running: number;
 
     public constructor(
+        private readonly mesher: Constructor<ChunkMesher>,
+        private readonly args: any[],
         private readonly queueSize: number = -1,
         private readonly concurrencyLimit: number = 3
     ) {
@@ -127,7 +130,14 @@ export class OffloadedChunkMeshGeneratorScheduler implements ChunkMeshGeneratorS
             }
 
             this.running++;
-            this.worker.postMessage({ x: chunk.x, y: chunk.y, z: chunk.z, chunkData: chunk.data });
+            this.worker.postMessage({
+                x: chunk.x,
+                y: chunk.y,
+                z: chunk.z,
+                chunkData: chunk.data,
+                impl: this.mesher.name,
+                args: this.args
+            });
         }
     }
 
@@ -137,7 +147,6 @@ export class OffloadedChunkMeshGeneratorScheduler implements ChunkMeshGeneratorS
         const chunk = this.findChunk({ x, y, z });
 
         if (!chunk) {
-            // TODO log warn
             debugger;
             return;
         }

@@ -1,4 +1,4 @@
-import { BoxGeometry, MeshLambertMaterial, Mesh, Vector3, Matrix4, Box3, WireframeGeometry } from 'three';
+import { BoxGeometry, MeshLambertMaterial, Mesh, Vector3 } from 'three';
 import { Entity } from './Entity';
 import { CameraFollow } from '../Components/CameraFollow';
 import { Health } from '../Components/Health';

@@ -16,6 +16,7 @@ export class Game {
 
     private readonly entities: Entity[] = [];
     private readonly systems: System[] = [];
+    private running = false;
     private lastTimestamp = 0;
 
     public constructor(
@@ -24,6 +25,7 @@ export class Game {
         const camera = new PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 1000);
         const controls = new OrbitControls(camera, renderer.domElement);
 
+        addEventListener('visibilitychange', this.onVisibilityChange.bind(this));
         addEventListener('resize', this.onResize.bind(this));
 
         this.camera = camera;
@@ -66,7 +68,7 @@ export class Game {
         let updates = 0;
         let dt = (currentTimestamp - this.lastTimestamp) / 1000;
 
-        while (dt >= Game.TIME_STEP) {
+        while (this.running && dt >= Game.TIME_STEP) {
             this.controls.update();
 
             for (const system of this.systems) {
@@ -87,7 +89,9 @@ export class Game {
 
         this.lastTimestamp = currentTimestamp;
 
-        requestAnimationFrame(this.update.bind(this));
+        if (this.running) {
+            requestAnimationFrame(this.update.bind(this));
+        }
     }
 
     private onResize(): void {
@@ -96,5 +100,15 @@ export class Game {
         this.renderer.setSize(innerWidth, innerHeight);
         this.camera.aspect = innerWidth / innerHeight;
         this.camera.updateProjectionMatrix();
+    }
+
+    private onVisibilityChange(): void {
+        if (document.hidden) {
+            console.warn('Stopping game due to visibility change');
+            this.stop();
+        } else {
+            console.info('Starting game after visibility change');
+            this.start();
+        }
     }
 }

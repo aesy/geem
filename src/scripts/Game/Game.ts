@@ -19,6 +19,7 @@ export class Game {
 
     private readonly entities: Entity[] = [];
     private readonly systems: System[] = [];
+    private animationFrameId: number | null = null;
     private running = false;
     private lastTimestamp = 0;
 
@@ -58,11 +59,16 @@ export class Game {
         if (!this.running) {
             this.running = true;
 
-            requestAnimationFrame(this.update.bind(this));
+            this.animationFrameId = requestAnimationFrame(this.update.bind(this));
         }
     }
 
     public stop(): void {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+
         this.fps = 1 / Game.TIME_STEP;
         this.lastTimestamp = 0;
         this.running = false;
@@ -70,7 +76,7 @@ export class Game {
 
     public update(currentTimestamp: number): void {
         if (Game.FPS_CAP > 0 && currentTimestamp < this.lastTimestamp + 1 / Game.FPS_CAP * 1000) {
-            requestAnimationFrame(this.update.bind(this));
+            this.animationFrameId = requestAnimationFrame(this.update.bind(this));
             return;
         }
 
@@ -78,7 +84,7 @@ export class Game {
         let dt = (currentTimestamp - this.lastTimestamp) / 1000;
 
         if (dt < Game.TIME_STEP) {
-            requestAnimationFrame(this.update.bind(this));
+            this.animationFrameId = requestAnimationFrame(this.update.bind(this));
             return;
         }
 
@@ -106,7 +112,7 @@ export class Game {
         this.lastTimestamp = currentTimestamp;
 
         if (this.running) {
-            requestAnimationFrame(this.update.bind(this));
+            this.animationFrameId = requestAnimationFrame(this.update.bind(this));
         }
     }
 

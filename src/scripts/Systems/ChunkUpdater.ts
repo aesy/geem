@@ -2,6 +2,7 @@ import textureAtlas from '../../assets/images/textureAtlas.png';
 import {
     BufferAttribute,
     BufferGeometry,
+    Material,
     MeshLambertMaterial,
     NearestFilter,
     RepeatWrapping,
@@ -18,6 +19,7 @@ import { BlockType } from '../WorldGen/Block';
 import { Chunk } from '../WorldGen/Chunk';
 import {
     ChunkMeshGeneratorScheduler,
+    InstantChunkMeshGeneratorScheduler,
     OffloadedChunkMeshGeneratorScheduler
 } from '../WorldGen/ChunkMeshGeneratorScheduler';
 import { CullingChunkMesher } from '../WorldGen/CullingChunkMesher';
@@ -44,14 +46,19 @@ const transparentBlockTypes = [
     BlockType.LEAVES
 ];
 
-const opaqueScheduler: ChunkMeshGeneratorScheduler = new OffloadedChunkMeshGeneratorScheduler(
+const instantOpaqueScheduler: ChunkMeshGeneratorScheduler = new InstantChunkMeshGeneratorScheduler(
+    new CullingChunkMesher(opaqueBlockTypes));
+const instantTransparentScheduler: ChunkMeshGeneratorScheduler = new InstantChunkMeshGeneratorScheduler(
+    new CullingChunkMesher(transparentBlockTypes));
+const asyncOpaqueScheduler: ChunkMeshGeneratorScheduler = new OffloadedChunkMeshGeneratorScheduler(
     CullingChunkMesher, [ opaqueBlockTypes ], -1, 4);
-const transparentScheduler: ChunkMeshGeneratorScheduler = new OffloadedChunkMeshGeneratorScheduler(
+const asyncTransparentScheduler: ChunkMeshGeneratorScheduler = new OffloadedChunkMeshGeneratorScheduler(
     CullingChunkMesher, [ transparentBlockTypes ], -1, 2);
 
 export class ChunkUpdater extends System {
-    private readonly chunkEntities: Map<Chunk, Entity[]>;
-    private readonly toBeMeshed: Chunk[];
+    private readonly chunkEntities: Map<Chunk, ChunkMesh[]>;
+    private readonly toBeMeshedNow: Chunk[];
+    private readonly toBeMeshedLater: Chunk[];
     private readonly toBeRemoved: Chunk[];
     private dirty: boolean;
 
@@ -61,7 +68,8 @@ export class ChunkUpdater extends System {
         super();
 
         this.chunkEntities = new Map();
-        this.toBeMeshed = [];
+        this.toBeMeshedNow = [];
+        this.toBeMeshedLater = [];
         this.toBeRemoved = [];
         this.dirty = false;
     }
@@ -77,33 +85,29 @@ export class ChunkUpdater extends System {
             return;
         }
 
-        while (this.toBeMeshed.length) {
-            const chunk = this.toBeMeshed.pop()!;
+        while (this.toBeMeshedNow.length) {
+            const chunk = this.toBeMeshedNow.pop()!;
 
             console.log(`Scheduling update of chunk: x: ${ chunk.x }, y: ${ chunk.y }, z: ${ chunk.z }`);
 
-            opaqueScheduler.schedule(chunk)
-                .then((data: MeshData): void => {
-                    const geometry = ChunkUpdater.createMesh(data);
-                    const newEntity = new ChunkMesh(chunk, geometry, opaqueMaterial);
-                    const entities = this.chunkEntities.get(chunk) || [];
+            const opaqueMeshPromise = instantOpaqueScheduler.schedule(chunk);
+            const transparentMeshPromise = instantTransparentScheduler.schedule(chunk);
 
-                    game.addEntity(newEntity);
-                    entities.push(newEntity);
-                    this.chunkEntities.set(chunk, entities);
-                })
+            Promise.all([ opaqueMeshPromise, transparentMeshPromise ])
+                .then(this.onNewMeshes(chunk, game))
                 .catch(console.error);
+        }
 
-            transparentScheduler.schedule(chunk)
-                .then((data: MeshData): void => {
-                    const geometry = ChunkUpdater.createMesh(data);
-                    const newEntity = new ChunkMesh(chunk, geometry, transparentMaterial);
-                    const entities = this.chunkEntities.get(chunk) || [];
+        while (this.toBeMeshedLater.length) {
+            const chunk = this.toBeMeshedLater.pop()!;
 
-                    game.addEntity(newEntity);
-                    entities.push(newEntity);
-                    this.chunkEntities.set(chunk, entities);
-                })
+            console.log(`Scheduling update of chunk: x: ${ chunk.x }, y: ${ chunk.y }, z: ${ chunk.z }`);
+
+            const opaqueMeshPromise = asyncOpaqueScheduler.schedule(chunk);
+            const transparentMeshPromise = asyncTransparentScheduler.schedule(chunk);
+
+            Promise.all([ opaqueMeshPromise, transparentMeshPromise ])
+                .then(this.onNewMeshes(chunk, game))
                 .catch(console.error);
         }
 
@@ -133,11 +137,11 @@ export class ChunkUpdater extends System {
         const position = WorldUtils.worldToChunk(event.position);
         const chunk = this.world.getChunk(position);
 
-        if (this.toBeMeshed.includes(chunk)) {
+        if (this.toBeMeshedNow.includes(chunk)) {
             return;
         }
 
-        this.toBeMeshed.push(chunk);
+        this.toBeMeshedNow.push(chunk);
         this.dirty = true;
     }
 
@@ -146,11 +150,11 @@ export class ChunkUpdater extends System {
 
         console.log('Chunk updated');
 
-        if (this.toBeMeshed.includes(chunk)) {
+        if (this.toBeMeshedLater.includes(chunk)) {
             return;
         }
 
-        this.toBeMeshed.push(chunk);
+        this.toBeMeshedLater.push(chunk);
         this.dirty = true;
     }
 
@@ -165,6 +169,38 @@ export class ChunkUpdater extends System {
 
         this.toBeRemoved.push(chunk);
         this.dirty = true;
+    }
+
+    private onNewMeshes(chunk: Chunk, game: Game): (data: MeshData[]) => void {
+        return (data: MeshData[]): void => {
+            const entities = this.chunkEntities.get(chunk) || [];
+
+            for (let i = entities.length; i--;) {
+                const entity = entities[ i ];
+
+                if (entity.chunk === chunk) {
+                    entities.splice(i, 1);
+                    game.removeEntity(entity);
+                }
+            }
+
+            for (let i = 0; i < data.length; i++) {
+                const datum = data[ i ];
+                const geometry = ChunkUpdater.createMesh(datum);
+                let material: Material;
+
+                if (i === 0) {
+                    material = opaqueMaterial;
+                } else {
+                    material = transparentMaterial;
+                }
+
+                const newEntity = new ChunkMesh(chunk, geometry, material);
+                game.addEntity(newEntity);
+                entities.push(newEntity);
+                this.chunkEntities.set(chunk, entities);
+            }
+        };
     }
 
     private static createMesh(data: MeshData): BufferGeometry {

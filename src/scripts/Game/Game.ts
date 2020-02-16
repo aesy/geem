@@ -9,10 +9,12 @@ import { System } from '../Systems/System';
 export class Game {
     private static readonly TIME_STEP = 1 / 60;
     private static readonly MAX_UPDATES_PER_FRAME = 100;
+    private static readonly FPS_DECAY = 0.1;
 
     public readonly events = new EventBus();
     public readonly camera: PerspectiveCamera;
     public readonly controls: OrbitControls;
+    public fps = 1 / Game.TIME_STEP;
 
     private readonly entities: Entity[] = [];
     private readonly systems: System[] = [];
@@ -67,6 +69,8 @@ export class Game {
     public update(currentTimestamp: number): void {
         let updates = 0;
         let dt = (currentTimestamp - this.lastTimestamp) / 1000;
+
+        this.fps = Game.FPS_DECAY * (1 / dt) + (1 - Game.FPS_DECAY) * this.fps;
 
         while (this.running && dt >= Game.TIME_STEP) {
             this.controls.update();

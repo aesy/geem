@@ -20,8 +20,8 @@ export class Player extends Entity {
         const material = new MeshLambertMaterial({color: 0xff00ff});
         const mesh = new Mesh(geometry, material);
 
-        mesh.position.set(0, 50, 0);
+        mesh.position.set(10, 50, 10);
 
-        this.addComponents(mesh, new Physical(35), new Movable(new Vector3()), new Controlable(), new CameraFollow(true), new Collider(geometry.boundingBox), new Health(10));
+        this.addComponents(mesh, new Physical(15), new Movable(new Vector3()), new Controlable(), new CameraFollow(true), new Collider(geometry.boundingBox), new Health(10));
     }
 }

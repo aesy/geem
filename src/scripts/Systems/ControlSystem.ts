@@ -87,7 +87,7 @@ export class ControlSystem extends System {
                 direction.add(vector.clone().applyAxisAngle(new Vector3(0, 1, 0), Math.PI / 2).negate());
             } 
 
-            direction.normalize().multiplyScalar(5);
+            direction.normalize().multiplyScalar(10);
 
             if (BlockUtils.isOpaque(block) && boundingBox.min.y === positionUnder.y + 1) {
                 if (this.keys.has('space')) {

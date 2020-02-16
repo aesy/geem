@@ -12,10 +12,14 @@ import { World, WorldUtils } from '../WorldGen/World';
 import { System } from './System';
 
 const scheduler: ChunkGeneratorScheduler = new OffloadedChunkDataGeneratorScheduler(
-    BorrealForestChunkGenerator, [], -1, 5);
+    BorrealForestChunkGenerator, [], 3, 3);
 
 export class ChunkLoader extends System {
+    private static readonly INTERVAL_SECONDS = 0.2;
+
     private readonly generated: Set<Chunk>;
+
+    private elapsedTime = 0;
 
     public constructor(
         private readonly world: World,
@@ -41,6 +45,14 @@ export class ChunkLoader extends System {
             return;
         }
 
+        this.elapsedTime += dt;
+
+        if (this.elapsedTime > ChunkLoader.INTERVAL_SECONDS) {
+            this.elapsedTime = 0;
+        } else {
+            return;
+        }
+
         // TODO only run whenever player has moved x amount of blocks
         // TODO load based on player rather than camera
         const cameraPosition = WorldUtils.worldToChunk(game.camera.position);
@@ -62,34 +74,20 @@ export class ChunkLoader extends System {
 
         for (const chunk of toBeGenerated) {
             this.generated.add(chunk);
-            console.log('Loading chunk', chunk);
 
             scheduler.schedule(chunk)
                 .then(() => {
                     game.events.emit(new ChunkLoaded(chunk));
                 })
-                .catch(console.error);
+                .catch(() => {
+                    this.generated.delete(chunk);
+                });
         }
     }
 
     private comparator(position: Coordinate3): Comparator<Chunk> {
         return (chunk1: Chunk, chunk2: Chunk): number => {
-            const diff = ChunkLoader.distance(chunk1, position) - ChunkLoader.distance(chunk2, position);
-
-            // If the difference in distance is large, prioritize the closest one
-            if (diff > 2 || diff < -2) {
-                return diff;
-            }
-
-            // Prioritize close chunks on the same y level
-            if (chunk1.y === position.y) {
-                return -1;
-            } else if (chunk2.y === position.y) {
-                return 1;
-            }
-
-            // Otherwise prioritize closest
-            return diff;
+            return ChunkLoader.distance(chunk1, position) - ChunkLoader.distance(chunk2, position);
         };
     }
 

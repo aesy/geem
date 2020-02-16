@@ -58,9 +58,9 @@ const instantOpaqueScheduler: ChunkMeshGeneratorScheduler = new InstantChunkMesh
 const instantTransparentScheduler: ChunkMeshGeneratorScheduler = new InstantChunkMeshGeneratorScheduler(
     new CullingChunkMesher(transparentBlockTypes));
 const asyncOpaqueScheduler: ChunkMeshGeneratorScheduler = new OffloadedChunkMeshGeneratorScheduler(
-    CullingChunkMesher, [ opaqueBlockTypes ], -1, 4);
+    CullingChunkMesher, [ opaqueBlockTypes ], 3, 3);
 const asyncTransparentScheduler: ChunkMeshGeneratorScheduler = new OffloadedChunkMeshGeneratorScheduler(
-    CullingChunkMesher, [ transparentBlockTypes ], -1, 2);
+    CullingChunkMesher, [ transparentBlockTypes ], 3, 3);
 
 export class ChunkUpdater extends System {
     private readonly chunkEntities: Map<Chunk, ChunkMesh[]>;
@@ -94,28 +94,28 @@ export class ChunkUpdater extends System {
 
         while (this.toBeMeshedNow.length) {
             const chunk = this.toBeMeshedNow.pop()!;
-
-            console.log(`Scheduling update of chunk: x: ${ chunk.x }, y: ${ chunk.y }, z: ${ chunk.z }`);
-
             const opaqueMeshPromise = instantOpaqueScheduler.schedule(chunk);
             const transparentMeshPromise = instantTransparentScheduler.schedule(chunk);
 
             Promise.all([ opaqueMeshPromise, transparentMeshPromise ])
                 .then(this.onNewMeshes(chunk, game))
-                .catch(console.error);
+                .catch(error => {
+                    console.error(error);
+                    this.toBeMeshedNow.push(chunk);
+                });
         }
 
         while (this.toBeMeshedLater.length) {
             const chunk = this.toBeMeshedLater.pop()!;
-
-            console.log(`Scheduling update of chunk: x: ${ chunk.x }, y: ${ chunk.y }, z: ${ chunk.z }`);
-
             const opaqueMeshPromise = asyncOpaqueScheduler.schedule(chunk);
             const transparentMeshPromise = asyncTransparentScheduler.schedule(chunk);
 
             Promise.all([ opaqueMeshPromise, transparentMeshPromise ])
                 .then(this.onNewMeshes(chunk, game))
-                .catch(console.error);
+                .catch(error => {
+                    console.error(error);
+                    this.toBeMeshedLater.push(chunk);
+                });
         }
 
         while (this.toBeRemoved.length) {
@@ -138,9 +138,6 @@ export class ChunkUpdater extends System {
 
     private onBlockDeleted(event: BlockRemoved): void {
         // TODO Schedule immediate neighbour chunk as well
-
-        console.log('Block deleted');
-
         const position = WorldUtils.worldToChunk(event.position);
         const chunk = this.world.getChunk(position);
 
@@ -155,8 +152,6 @@ export class ChunkUpdater extends System {
     private onChunkLoaded(event: ChunkLoaded): void {
         const chunk = event.chunk;
 
-        console.log('Chunk updated');
-
         if (this.toBeMeshedLater.includes(chunk)) {
             return;
         }
@@ -167,8 +162,6 @@ export class ChunkUpdater extends System {
 
     private onChunkUnloaded(event: ChunkLoaded): void {
         const chunk = event.chunk;
-
-        console.log('Chunk removed');
 
         if (this.toBeRemoved.includes(chunk)) {
             return;

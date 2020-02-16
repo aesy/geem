@@ -62,12 +62,12 @@ export class ControlSystem extends System {
             
             const boundingBox = new Box3().setFromObject(object);
             const size = boundingBox.getSize(new Vector3());
-            
+
             const positionUnder = {
                 x: Math.floor(object.position.x),
                 y: Math.floor(object.position.y - (size.y / 2) - 1),
-                z: Math.floor(object.position.z),
-            }
+                z: Math.floor(object.position.z)
+            };
             
             const block = this.world.getBlock(positionUnder);
             

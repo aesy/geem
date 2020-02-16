@@ -20,7 +20,7 @@ export class InstantChunkDataGeneratorScheduler implements ChunkGeneratorSchedul
 }
 
 export class AsyncChunkDataGeneratorScheduler implements ChunkGeneratorScheduler {
-    private readonly map: Map<Chunk, Deferred<ChunkData>>;
+    private readonly deferred: Map<Chunk, Deferred<ChunkData>>;
     private running: number;
 
     public constructor(
@@ -28,24 +28,22 @@ export class AsyncChunkDataGeneratorScheduler implements ChunkGeneratorScheduler
         private readonly queueSize: number = -1,
         private readonly concurrencyLimit: number = 1
     ) {
-        this.map = new Map();
+        this.deferred = new Map();
         this.running = 0;
     }
 
     public schedule(chunk: Chunk): Promise<ChunkData> {
-        let deferred = this.map.get(chunk);
+        if (this.queueSize >= 0 && this.deferred.size >= this.queueSize) {
+            return Promise.reject('Queue is full');
+        }
+
+        let deferred = this.deferred.get(chunk);
 
         if (deferred) {
             return deferred.promise;
         } else {
             deferred = new Deferred<ChunkData>();
-            this.map.set(chunk, deferred);
-        }
-
-        if (this.queueSize >= 0 && this.map.size >= this.queueSize) {
-            deferred.reject('Queue is full');
-
-            return deferred.promise;
+            this.deferred.set(chunk, deferred);
         }
 
         this.next();
@@ -58,7 +56,7 @@ export class AsyncChunkDataGeneratorScheduler implements ChunkGeneratorScheduler
     }
 
     private next(): void {
-        for (const [ chunk, deferred ] of this.map) {
+        for (const [ chunk, deferred ] of this.deferred) {
             if (this.running >= this.concurrencyLimit) {
                 return;
             }
@@ -67,7 +65,7 @@ export class AsyncChunkDataGeneratorScheduler implements ChunkGeneratorScheduler
 
             setTimeout(() => {
                 this.chunkGenerator.generateChunk(chunk);
-                this.map.delete(chunk);
+                this.deferred.delete(chunk);
                 this.running--;
 
                 deferred.resolve(chunk.data);
@@ -78,7 +76,7 @@ export class AsyncChunkDataGeneratorScheduler implements ChunkGeneratorScheduler
 
 export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorScheduler {
     private readonly worker: Worker;
-    private readonly map: Map<Chunk, Deferred<ChunkData>>;
+    private readonly deferred: Map<Chunk, Deferred<ChunkData>>;
     private running: number;
 
     public constructor(
@@ -90,7 +88,7 @@ export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorSched
         this.worker = new Worker('../Worker/ChunkGenerationWorker.ts',
             { name: 'ChunkWorker', type: 'module' });
         this.worker.onmessage = this.onNewChunk.bind(this);
-        this.map = new Map();
+        this.deferred = new Map();
         this.running = 0;
     }
 
@@ -103,19 +101,17 @@ export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorSched
     }
 
     public schedule(chunk: Chunk): Promise<ChunkData> {
-        let deferred = this.map.get(chunk);
+        if (this.queueSize >= 0 && this.deferred.size >= this.queueSize) {
+            return Promise.reject('Queue is full');
+        }
+
+        let deferred = this.deferred.get(chunk);
 
         if (deferred) {
             return deferred.promise;
         } else {
             deferred = new Deferred<ChunkData>();
-            this.map.set(chunk, deferred);
-        }
-
-        if (this.queueSize >= 0 && this.map.size >= this.queueSize) {
-            deferred.reject('Queue is full');
-
-            return deferred.promise;
+            this.deferred.set(chunk, deferred);
         }
 
         this.next();
@@ -124,7 +120,7 @@ export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorSched
     }
 
     private next(): void {
-        for (const chunk of this.map.keys()) {
+        for (const chunk of this.deferred.keys()) {
             if (this.running >= this.concurrencyLimit) {
                 return;
             }
@@ -153,8 +149,8 @@ export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorSched
 
         chunk.data = chunkData;
 
-        const deferred = this.map.get(chunk)!;
-        this.map.delete(chunk);
+        const deferred = this.deferred.get(chunk)!;
+        this.deferred.delete(chunk);
         this.running--;
 
         deferred.resolve(chunk.data);
@@ -162,7 +158,7 @@ export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorSched
     }
 
     private findChunk(position: Coordinate3): Chunk | null {
-        for (const chunk of this.map.keys()) {
+        for (const chunk of this.deferred.keys()) {
             if (chunk.x === position.x && chunk.y === position.y && chunk.z === position.z) {
                 return chunk;
             }

@@ -24,8 +24,6 @@ onmessage = (event: MessageEvent): void => {
         generator = DEFAULT_CHUNK_GENERATOR;
     }
 
-    console.log(`Creating chunk data: x: ${ x }, y: ${ y }, z: ${ z }`);
-
     const chunk = new Chunk({ x, y, z }, null, chunkData);
     generator.generateChunk(chunk);
 

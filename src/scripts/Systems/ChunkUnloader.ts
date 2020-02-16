@@ -6,6 +6,10 @@ import { World, WorldUtils } from '../WorldGen/World';
 import { System } from './System';
 
 export class ChunkUnloader extends System {
+    private static readonly INTERVAL_SECONDS = 0.5;
+
+    private elapsedTime = 0;
+
     public constructor(
         private readonly world: World,
         private readonly maxDistance: number = 1
@@ -18,6 +22,14 @@ export class ChunkUnloader extends System {
     }
 
     public update(dt: number, entities: Entity[], game: Game): void {
+        this.elapsedTime += dt;
+
+        if (this.elapsedTime > ChunkUnloader.INTERVAL_SECONDS) {
+            this.elapsedTime = 0;
+        } else {
+            return;
+        }
+
         // TODO only run whenever player has moved x amount of blocks
         // TODO load based on player rather than camera
         const cameraPosition = WorldUtils.worldToChunk(game.camera.position);
@@ -28,7 +40,6 @@ export class ChunkUnloader extends System {
                 Math.abs(chunk.y - cameraPosition.y) > this.maxDistance ||
                 Math.abs(chunk.z - cameraPosition.z) > this.maxDistance
             ) {
-                console.log('Unloading chunk', chunk);
                 this.world.clearChunk(chunk);
                 game.events.emit(new ChunkUnloaded(chunk));
             }

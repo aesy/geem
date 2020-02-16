@@ -20,7 +20,7 @@ export class InstantChunkMeshGeneratorScheduler implements ChunkMeshGeneratorSch
 }
 
 export class AsyncChunkMeshGeneratorScheduler implements ChunkMeshGeneratorScheduler {
-    private readonly map: Map<Chunk, Deferred<MeshData>>;
+    private readonly deferred: Map<Chunk, Deferred<MeshData>>;
     private running: number;
 
     public constructor(
@@ -28,24 +28,22 @@ export class AsyncChunkMeshGeneratorScheduler implements ChunkMeshGeneratorSched
         private readonly queueSize: number = -1,
         private readonly concurrencyLimit: number = 1
     ) {
-        this.map = new Map();
+        this.deferred = new Map();
         this.running = 0;
     }
 
     public schedule(chunk: Chunk): Promise<MeshData> {
-        let deferred = this.map.get(chunk);
+        if (this.queueSize >= 0 && this.deferred.size >= this.queueSize) {
+            return Promise.reject('Queue is full');
+        }
+
+        let deferred = this.deferred.get(chunk);
 
         if (deferred) {
             return deferred.promise;
         } else {
             deferred = new Deferred<MeshData>();
-            this.map.set(chunk, deferred);
-        }
-
-        if (this.queueSize >= 0 && this.map.size >= this.queueSize) {
-            deferred.reject('Queue is full');
-
-            return deferred.promise;
+            this.deferred.set(chunk, deferred);
         }
 
         this.next();
@@ -58,7 +56,7 @@ export class AsyncChunkMeshGeneratorScheduler implements ChunkMeshGeneratorSched
     }
 
     private next(): void {
-        for (const [ chunk, deferred ] of this.map) {
+        for (const [ chunk, deferred ] of this.deferred) {
             if (this.running >= this.concurrencyLimit) {
                 return;
             }
@@ -67,7 +65,7 @@ export class AsyncChunkMeshGeneratorScheduler implements ChunkMeshGeneratorSched
 
             setTimeout(() => {
                 const meshData = this.mesher.createMesh(chunk);
-                this.map.delete(chunk);
+                this.deferred.delete(chunk);
                 this.running--;
 
                 deferred.resolve(meshData);
@@ -78,7 +76,7 @@ export class AsyncChunkMeshGeneratorScheduler implements ChunkMeshGeneratorSched
 
 export class OffloadedChunkMeshGeneratorScheduler implements ChunkMeshGeneratorScheduler {
     private readonly worker: Worker;
-    private readonly map: Map<Chunk, Deferred<MeshData>>;
+    private readonly deferred: Map<Chunk, Deferred<MeshData>>;
     private running: number;
 
     public constructor(
@@ -90,7 +88,7 @@ export class OffloadedChunkMeshGeneratorScheduler implements ChunkMeshGeneratorS
         this.worker = new Worker('../Worker/ChunkMesherWorker.ts',
             { name: 'ChunkMesher', type: 'module' });
         this.worker.onmessage = this.onNewMesh.bind(this);
-        this.map = new Map();
+        this.deferred = new Map();
         this.running = 0;
     }
 
@@ -103,19 +101,17 @@ export class OffloadedChunkMeshGeneratorScheduler implements ChunkMeshGeneratorS
     }
 
     public schedule(chunk: Chunk): Promise<MeshData> {
-        let deferred = this.map.get(chunk);
+        if (this.queueSize >= 0 && this.deferred.size >= this.queueSize) {
+            return Promise.reject('Queue is full');
+        }
+
+        let deferred = this.deferred.get(chunk);
 
         if (deferred) {
             return deferred.promise;
         } else {
             deferred = new Deferred<MeshData>();
-            this.map.set(chunk, deferred);
-        }
-
-        if (this.queueSize >= 0 && this.map.size >= this.queueSize) {
-            deferred.reject('Queue is full');
-
-            return deferred.promise;
+            this.deferred.set(chunk, deferred);
         }
 
         this.next();
@@ -124,7 +120,7 @@ export class OffloadedChunkMeshGeneratorScheduler implements ChunkMeshGeneratorS
     }
 
     private next(): void {
-        for (const chunk of this.map.keys()) {
+        for (const chunk of this.deferred.keys()) {
             if (this.running >= this.concurrencyLimit) {
                 return;
             }
@@ -151,8 +147,8 @@ export class OffloadedChunkMeshGeneratorScheduler implements ChunkMeshGeneratorS
             return;
         }
 
-        const deferred = this.map.get(chunk)!;
-        this.map.delete(chunk);
+        const deferred = this.deferred.get(chunk)!;
+        this.deferred.delete(chunk);
         this.running--;
 
         deferred.resolve(meshData);
@@ -160,7 +156,7 @@ export class OffloadedChunkMeshGeneratorScheduler implements ChunkMeshGeneratorS
     }
 
     private findChunk(position: Coordinate3): Chunk | null {
-        for (const chunk of this.map.keys()) {
+        for (const chunk of this.deferred.keys()) {
             if (chunk.x === position.x && chunk.y === position.y && chunk.z === position.z) {
                 return chunk;
             }

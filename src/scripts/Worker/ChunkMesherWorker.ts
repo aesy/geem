@@ -38,8 +38,6 @@ onmessage = (event: MessageEvent): void => {
         mesher = DEFAULT_CHUNK_MESHER;
     }
 
-    console.log(`Creating chunk mesh: x: ${ x }, y: ${ y }, z: ${ z }`);
-
     const chunk = new Chunk({ x, y, z }, null, chunkData);
     const meshData = mesher.createMesh(chunk);
 

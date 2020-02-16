@@ -48,9 +48,9 @@ export class RenderSystem extends System {
     }
 
     public update(dt: number, entities: Entity[], game: Game): void {
-        const deleted = this.deleted.pop();
+        while (this.deleted.length) {
+            const deleted = this.deleted.pop()!;
 
-        if (deleted) {
             this.scene.remove(deleted);
         }
 

@@ -81,7 +81,15 @@ export class Game {
         }
 
         let updates = 0;
-        let dt = (currentTimestamp - this.lastTimestamp) / 1000;
+        let dt: number;
+
+        if (this.lastTimestamp === 0) {
+            // First frame, there's no delta time
+            dt = Game.TIME_STEP;
+            this.lastTimestamp = currentTimestamp;
+        } else {
+            dt = (currentTimestamp - this.lastTimestamp) / 1000;
+        }
 
         if (dt < Game.TIME_STEP) {
             this.animationFrameId = requestAnimationFrame(this.update.bind(this));

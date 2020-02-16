@@ -3,6 +3,22 @@ import { Constructor } from '../Util/Type';
 import { Chunk, ChunkData, ChunkMesher } from '../WorldGen/Chunk';
 import { CullingChunkMesher } from '../WorldGen/CullingChunkMesher';
 import { DEFAULT_CHUNK_MESHER } from '../WorldGen/Defaults';
+import { BlockType } from '../WorldGen/Block';
+
+const mesher: ChunkMesher = new CullingChunkMesher([
+    BlockType.DIRT,
+    BlockType.DRY_DIRT,
+    BlockType.WATER,
+    BlockType.SAND,
+    BlockType.STONE,
+    BlockType.MOSSY_STONE,
+    BlockType.SNOW,
+    BlockType.TREE,
+    BlockType.LEAVES,
+    BlockType.MOSS,
+    BlockType.SMALL_STONE,
+    BlockType.TWIG,
+]);
 
 const chunkMeshers: { [ key: string ]: Constructor<ChunkMesher> } = {
     [ CullingChunkMesher.name ]: CullingChunkMesher

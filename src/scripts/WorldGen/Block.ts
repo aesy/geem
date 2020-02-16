@@ -3,12 +3,17 @@ import { Coordinate3 } from '../Util/Math';
 export enum BlockType {
     AIR,
     DIRT,
+    DRY_DIRT,
     WATER,
     SAND,
     STONE,
+    MOSSY_STONE,
     SNOW,
     TREE,
-    LEAVES
+    LEAVES,
+    MOSS,
+    SMALL_STONE,
+    TWIG
 }
 
 export interface Block {
@@ -23,10 +28,12 @@ export class BlockUtils {
     public static isOpaque(block: Block): boolean {
         return [
             BlockType.DIRT,
+            BlockType.DRY_DIRT,
             BlockType.SAND,
             BlockType.STONE,
             BlockType.SNOW,
-            BlockType.TREE
+            BlockType.TREE,
+            BlockType.MOSSY_STONE,
         ].includes(block.type);
     }
 }

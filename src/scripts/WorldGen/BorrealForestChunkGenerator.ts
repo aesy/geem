@@ -3,13 +3,114 @@ import PoissonDiskSampling from 'poisson-disk-sampling';
 import { makeNoise2D, makeNoise3D } from 'open-simplex-noise';
 import { BlockType, PositionedBlock } from './Block';
 import { Chunk, ChunkGenerator, ChunkUtils } from './Chunk';
+import MersenneTwister from 'mersenne-twister';
 
-const noise = makeNoise2D(Math.random() * Number.MAX_SAFE_INTEGER);
-const noise3d = makeNoise3D(Math.random() * Number.MAX_SAFE_INTEGER);
+const noise = makeNoise2D(123);
+const noise3d = makeNoise3D(123);
 const amplitude = 40;
 const frequency = .5;
 
-const pineTree: PositionedBlock[] = [
+const fallenPineTree: PositionedBlock[] = [
+    { x: 0, y: 0, z: 0, type: BlockType.DIRT },
+    { x: 0, y: 1, z: 0, type: BlockType.DIRT },
+    { x: 0, y: 2, z: 0, type: BlockType.DIRT },
+    { x: 0, y: 3, z: 0, type: BlockType.DIRT },
+    { x: -1, y: 4, z: 0, type: BlockType.DIRT },
+    { x: 0, y: 0, z: -1, type: BlockType.DIRT },
+    { x: 0, y: 1, z: -1, type: BlockType.DIRT },
+    { x: 0, y: 2, z: -1, type: BlockType.DIRT },
+    { x: 0, y: 3, z: -1, type: BlockType.DIRT },
+    { x: -1, y: 4, z: -1, type: BlockType.DIRT },
+    { x: 0, y: 0, z: 1, type: BlockType.DIRT },
+    { x: 0, y: 1, z: 1, type: BlockType.DIRT },
+    { x: 0, y: 2, z: 1, type: BlockType.DIRT },
+    { x: 0, y: 3, z: 1, type: BlockType.DIRT },
+    { x: -1, y: 4, z: 1, type: BlockType.DIRT },
+    { x: -1, y: 0, z: 2, type: BlockType.DIRT },
+    { x: -1, y: 1, z: 2, type: BlockType.DIRT },
+    { x: -1, y: 2, z: 2, type: BlockType.DIRT },
+    { x: -1, y: 3, z: 2, type: BlockType.DIRT },
+    { x: -1, y: 0, z: -2, type: BlockType.DIRT },
+    { x: -1, y: 1, z: -2, type: BlockType.DIRT },
+    { x: -1, y: 2, z: -2, type: BlockType.DIRT },
+    { x: -1, y: 3, z: -2, type: BlockType.DIRT },
+    { x: -1, y: 0, z: 0, type: BlockType.DIRT },
+    { x: -1, y: 0, z: 1, type: BlockType.DIRT },
+    { x: -1, y: 1, z: 1, type: BlockType.DIRT },
+    { x: 1, y: 1, z: 0, type: BlockType.TREE },
+    { x: 2, y: 1, z: 0, type: BlockType.TREE },
+    { x: 3, y: 1, z: 0, type: BlockType.TREE },
+    { x: 4, y: 1, z: 0, type: BlockType.TREE },
+    { x: 5, y: 1, z: 0, type: BlockType.TREE },
+    { x: 6, y: 1, z: 0, type: BlockType.TREE },
+    { x: 7, y: 1, z: 0, type: BlockType.TREE },
+    { x: 8, y: 1, z: 0, type: BlockType.TREE },
+    { x: 9, y: 1, z: 0, type: BlockType.TREE },
+];
+
+const largePineTree: PositionedBlock[] = [
+    { x: 1, y: -1, z: 0, type: BlockType.DRY_DIRT },
+    { x: -1, y: -1, z: 0, type: BlockType.DRY_DIRT },
+    { x: 0, y: -1, z: 1, type: BlockType.DRY_DIRT },
+    { x: 0, y: -1, z: -1, type: BlockType.DRY_DIRT },
+    { x: 0, y: 0, z: 0, type: BlockType.TREE },
+    { x: 0, y: 1, z: 0, type: BlockType.TREE },
+    { x: 0, y: 2, z: 0, type: BlockType.TREE },
+    { x: 0, y: 3, z: 0, type: BlockType.TREE },
+    { x: 0, y: 4, z: 0, type: BlockType.TREE },
+    { x: 0, y: 5, z: 0, type: BlockType.TREE },
+    { x: 0, y: 6, z: 0, type: BlockType.TREE },
+    { x: 0, y: 7, z: 0, type: BlockType.TREE },
+    { x: 0, y: 8, z: 0, type: BlockType.TREE },
+    { x: 0, y: 9, z: 0, type: BlockType.TREE },
+    { x: 0, y: 10, z: 0, type: BlockType.TREE },
+    { x: 0, y: 11, z: 0, type: BlockType.TREE },
+    { x: 0, y: 12, z: 0, type: BlockType.TREE },
+    { x: 0, y: 13, z: 0, type: BlockType.LEAVES },
+    { x: 1, y: 12, z: 0, type: BlockType.LEAVES },
+    { x: -1, y: 12, z: 0, type: BlockType.LEAVES },
+    { x: 0, y: 12, z: 1, type: BlockType.LEAVES },
+    { x: 0, y: 12, z: -1, type: BlockType.LEAVES },
+    { x: 1, y: 10, z: 0, type: BlockType.LEAVES },
+    { x: -1, y: 10, z: 0, type: BlockType.LEAVES },
+    { x: 0, y: 10, z: 1, type: BlockType.LEAVES },
+    { x: 0, y: 10, z: -1, type: BlockType.LEAVES },
+    { x: 1, y: 9, z: 0, type: BlockType.LEAVES },
+    { x: -1, y: 9, z: 0, type: BlockType.LEAVES },
+    { x: 0, y: 9, z: 1, type: BlockType.LEAVES },
+    { x: 0, y: 9, z: -1, type: BlockType.LEAVES },
+    { x: 1, y: 7, z: 0, type: BlockType.LEAVES },
+    { x: -1, y: 7, z: 0, type: BlockType.LEAVES },
+    { x: 0, y: 7, z: 1, type: BlockType.LEAVES },
+    { x: 0, y: 7, z: -1, type: BlockType.LEAVES },
+    { x: 1, y: 6, z: 0, type: BlockType.LEAVES },
+    { x: -1, y: 6, z: 0, type: BlockType.LEAVES },
+    { x: 0, y: 6, z: 1, type: BlockType.LEAVES },
+    { x: 0, y: 6, z: -1, type: BlockType.LEAVES },
+    { x: 2, y: 6, z: 0, type: BlockType.LEAVES },
+    { x: -2, y: 6, z: 0, type: BlockType.LEAVES },
+    { x: 0, y: 6, z: 2, type: BlockType.LEAVES },
+    { x: 0, y: 6, z: -2, type: BlockType.LEAVES },
+    { x: 1, y: 4, z: 0, type: BlockType.LEAVES },
+    { x: -1, y: 4, z: 0, type: BlockType.LEAVES },
+    { x: 0, y: 4, z: 1, type: BlockType.LEAVES },
+    { x: 0, y: 4, z: -1, type: BlockType.LEAVES },
+    { x: 1, y: 3, z: 0, type: BlockType.LEAVES },
+    { x: -1, y: 3, z: 0, type: BlockType.LEAVES },
+    { x: 0, y: 3, z: 1, type: BlockType.LEAVES },
+    { x: 0, y: 3, z: -1, type: BlockType.LEAVES },
+    { x: 2, y: 3, z: 0, type: BlockType.LEAVES },
+    { x: -2, y: 3, z: 0, type: BlockType.LEAVES },
+    { x: 0, y: 3, z: 2, type: BlockType.LEAVES },
+    { x: 0, y: 3, z: -2, type: BlockType.LEAVES }
+];
+
+
+const mediumPineTree: PositionedBlock[] = [
+    { x: 1, y: -1, z: 0, type: BlockType.DRY_DIRT },
+    { x: -1, y: -1, z: 0, type: BlockType.DRY_DIRT },
+    { x: 0, y: -1, z: 1, type: BlockType.DRY_DIRT },
+    { x: 0, y: -1, z: -1, type: BlockType.DRY_DIRT },
     { x: 0, y: 0, z: 0, type: BlockType.TREE },
     { x: 0, y: 1, z: 0, type: BlockType.TREE },
     { x: 0, y: 2, z: 0, type: BlockType.TREE },
@@ -52,6 +153,27 @@ const pineTree: PositionedBlock[] = [
     { x: 0, y: 2, z: -1, type: BlockType.LEAVES }
 ];
 
+const smallPineTree: PositionedBlock[] = [
+    { x: 1, y: -1, z: 0, type: BlockType.DRY_DIRT },
+    { x: -1, y: -1, z: 0, type: BlockType.DRY_DIRT },
+    { x: 0, y: -1, z: 1, type: BlockType.DRY_DIRT },
+    { x: 0, y: -1, z: -1, type: BlockType.DRY_DIRT },
+    { x: 0, y: 0, z: 0, type: BlockType.TREE },
+    { x: 0, y: 1, z: 0, type: BlockType.TREE },
+    { x: 0, y: 2, z: 0, type: BlockType.TREE },
+    { x: 0, y: 3, z: 0, type: BlockType.TREE },
+    { x: 0, y: 4, z: 0, type: BlockType.TREE },
+    { x: 0, y: 5, z: 0, type: BlockType.LEAVES },
+    { x: 1, y: 4, z: 0, type: BlockType.LEAVES },
+    { x: -1, y: 4, z: 0, type: BlockType.LEAVES },
+    { x: 0, y: 4, z: 1, type: BlockType.LEAVES },
+    { x: 0, y: 4, z: -1, type: BlockType.LEAVES },
+    { x: 0, y: 2, z: 1, type: BlockType.LEAVES },
+    { x: 0, y: 2, z: -1, type: BlockType.LEAVES },
+    { x: 1, y: 2, z: 0, type: BlockType.LEAVES },
+    { x: -1, y: 2, z: 0, type: BlockType.LEAVES },
+];
+
 const CaveTemplate: PositionedBlock[] = [
     { x: 0, y: 0, z: 0, type: BlockType.DIRT },
     { x: 1, y: 0, z: 0, type: BlockType.DIRT },
@@ -74,8 +196,11 @@ const CaveTemplate: PositionedBlock[] = [
 export class BorrealForestChunkGenerator implements ChunkGenerator {
     public generateChunk(chunk: Chunk): void {
         BorrealForestChunkGenerator.generateTerrain(chunk);
-        // BorrealForestChunkGenerator.generateWorms(chunk);
         BorrealForestChunkGenerator.generateTrees(chunk);
+        BorrealForestChunkGenerator.generateStones(chunk);
+        BorrealForestChunkGenerator.generateVegetation(chunk);
+        // BorrealForestChunkGenerator.generateSmallStones(chunk);
+
     }
 
     private static generateTerrain(chunk: Chunk): void {
@@ -140,8 +265,11 @@ export class BorrealForestChunkGenerator implements ChunkGenerator {
     }
 
     private static generateTrees(chunk: Chunk): void {
-        const sampler = new PoissonDiskSampling([ Chunk.SIZE - 1, Chunk.SIZE - 1 ], 5, 20, 10);
+        const generator = new MersenneTwister(123);
+        const sampler = new PoissonDiskSampling([ Chunk.SIZE + 1, Chunk.SIZE + 1 ], 5, 30, 0, () => generator.random());
         const points = sampler.fill();
+
+        
 
         for (const point of points) {
             const x = Math.floor(point[ 0 ]);
@@ -158,43 +286,88 @@ export class BorrealForestChunkGenerator implements ChunkGenerator {
                 const previous = chunk.getBlock({ x, y: y - 1, z });
 
                 if (block.type === BlockType.AIR && previous.type === BlockType.DIRT) {
-                    ChunkUtils.applyTemplate(chunk, pos, pineTree);
+                    if (generator.random() < 0.5) {
+                        ChunkUtils.applyTemplate(chunk, pos, mediumPineTree);
+                    } else if (generator.random() < 0.5) {
+                        ChunkUtils.applyTemplate(chunk, pos, largePineTree);
+                    } else if (generator.random() < 0.5) {
+                        ChunkUtils.applyTemplate(chunk, pos, smallPineTree);
+                    } 
+                    // else {
+                    //     ChunkUtils.applyTemplate(chunk, pos, fallenPineTree);
+                    // }
                     break;
                 }
             }
         }
     }
 
-    private static generateCaves(chunk: Chunk): void {
-        const xOffset = chunk.x * Chunk.SIZE;
-        const yOffset = chunk.y * Chunk.SIZE;
-        const zOffset = chunk.z * Chunk.SIZE;
+    private static generateVegetation(chunk: Chunk): void {
+        const generator = new MersenneTwister(123);
+        const sampler = new PoissonDiskSampling([ Chunk.SIZE + 1, Chunk.SIZE + 1 ], 1, 1, 20, () => generator.random());
+        const points = sampler.fill();
+        const types = [BlockType.DIRT, BlockType.DRY_DIRT, BlockType.STONE, BlockType.MOSSY_STONE];
 
-        for (let blockX = 0; blockX < Chunk.SIZE; blockX++) {
-            for (let blockY = 0; blockY < Chunk.SIZE; blockY++) {
-                for (let blockZ = 0; blockZ < Chunk.SIZE; blockZ++) {
-                    const worldX = (blockX + xOffset);
-                    const worldY = (blockY + yOffset);
-                    const worldZ = (blockZ + zOffset);
+        for (const point of points) {
+            const x = Math.floor(point[ 0 ]);
+            const z = Math.floor(point[ 1 ]);
 
-                    const noiseX = worldX / 100;
-                    const noiseY = worldY / 100;
-                    const noiseZ = worldZ / 100;
+            for (let y = 0; y < Chunk.SIZE; y++) {
+                const pos = { x, y, z };
+                const block = chunk.getBlock(pos);
 
-                    const layer = noise3d(noiseX * frequency, noiseY * frequency, noiseZ * frequency);
-                    const layer2 = 0.5 * noise3d(noiseX * 2 * frequency, noiseY * 2 * frequency, noiseZ * 2 * frequency);
-                    const layer3 = 0.25 * noise3d(noiseX * 4 * frequency, noiseY * 4 * frequency, noiseZ * 4 * frequency);
-                    const limit = layer + layer2 + layer3;
-                    const isGround = 0 <= Math.round(limit);
-                    let type;
+                if (y === 0) {
+                    continue;
+                }
 
-                    if (isGround) {
-                        type = BlockType.STONE;
+                const previous = chunk.getBlock({ x, y: y - 1, z });
+
+                if (block.type === BlockType.AIR && previous.type === BlockType.DRY_DIRT) {
+                    if (generator.random() < .9) {
+                        chunk.setBlock(pos, {type: BlockType.TWIG});
                     } else {
-                        continue;
+                        chunk.setBlock(pos, {type: BlockType.SMALL_STONE});  
                     }
+                } else if (block.type === BlockType.AIR && types.includes(previous.type)) {
+                    if (generator.random() < .95) {
+                        chunk.setBlock(pos, {type: BlockType.MOSS});
+                    } else if (generator.random() < .5) {
+                        chunk.setBlock(pos, {type: BlockType.SMALL_STONE});
+                    } else {
+                        chunk.setBlock(pos, {type: BlockType.TWIG});
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    
+    private static generateStones(chunk: Chunk): void {
+        const generator = new MersenneTwister(123);
+        const sampler = new PoissonDiskSampling([ Chunk.SIZE - 1, Chunk.SIZE - 1 ], 10, 20, 10, () => generator.random());
+        const points = sampler.fill();
+        
+        for (const point of points) {
+            const x = Math.floor(point[ 0 ]);
+            const z = Math.floor(point[ 1 ]);
 
-                    chunk.setBlock({ x: blockX, y: blockY, z: blockZ }, { type });
+            for (let y = 0; y < Chunk.SIZE; y++) {
+                const pos = { x, y, z };
+                const block = chunk.getBlock(pos);
+                
+                if (y === 0) {
+                    continue;
+                }
+                
+                const previous = chunk.getBlock({ x, y: y - 1, z });
+                
+                if (block.type === BlockType.AIR && previous.type === BlockType.DIRT) {
+                    if (generator.random() < .5) {
+                        chunk.setBlock(pos, {type: BlockType.MOSSY_STONE});
+                    } else {
+                        chunk.setBlock(pos, {type: BlockType.STONE});
+                    }
+                    break;
                 }
             }
         }

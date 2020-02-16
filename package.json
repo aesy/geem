@@ -28,17 +28,19 @@
         "url-loader": "^1.1.2",
         "terser-webpack-plugin": "^2.3.4",
         "typescript": "^3.4.5",
-        "webpack": "^4.26.1",
+        "webpack": "^4.41.6",
         "webpack-cli": "^3.3.10",
         "webpack-dev-server": "^3.10.3",
         "webpack-merge": "^4.1.4",
         "worker-plugin": "^3.2.0"
     },
     "dependencies": {
+        "@types/mersenne-twister": "^1.1.2",
+        "mersenne-twister": "^1.1.0",
         "normalize.css": "^8.0.1",
         "open-simplex-noise": "^2.2.0",
+        "poisson-disk-sampling": "^1.0.6",
         "three": "^0.112.1",
-        "three-orbitcontrols": "^2.110.3",
-        "poisson-disk-sampling": "^1.0.6"
+        "three-orbitcontrols": "^2.110.3"
     }
 }

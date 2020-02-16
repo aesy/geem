@@ -128,10 +128,21 @@ export class CullingChunkMesher implements ChunkMesher {
                             for (const corner of face.corners) {
                                 if (block.type === BlockType.WATER && topBlock.type === BlockType.AIR) {
                                     // HACK push water down a notch, it looks nice :-)
-                                    vertices.push(x + corner.x, y + Math.min(0.8, corner.y), z + corner.z);
+                                    vertices.push(x + corner.x, y + corner.y - 0.2, z + corner.z);
+                                } else if (block.type === BlockType.LEAVES && direction === Direction.BOTTOM) {
+                                    vertices.push(x + corner.x, y + corner.y + 1/8, z + corner.z);
+                                } else if (block.type === BlockType.MOSS && direction === Direction.TOP){
+                                    vertices.push(x + corner.x, y + corner.y - 15/16, z + corner.z);
+                                } else if (block.type === BlockType.SMALL_STONE) {
+                                    vertices.push(x + corner.x, y + corner.y - 15/16, z + corner.z);
+                                } else if (block.type === BlockType.TWIG) {
+                                    vertices.push(x + corner.x, y + corner.y - 15/16, z + corner.z);
                                 } else {
                                     vertices.push(x + corner.x, y + corner.y, z + corner.z);
                                 }
+
+                             
+                    
 
                                 normals.push(face.normal.x, face.normal.y, face.normal.z);
 
@@ -154,33 +165,54 @@ export class CullingChunkMesher implements ChunkMesher {
     }
 
     private static getTextureIndex(chunk: Chunk, block: PositionedBlock, direction: Coordinate3): number {
-        const adjacentBlock = CullingChunkMesher.getAdjacentBlock(chunk, block, Direction.TOP);
+        const topBlock = CullingChunkMesher.getAdjacentBlock(chunk, block, Direction.TOP);
+        const bottomBlock = CullingChunkMesher.getAdjacentBlock(chunk, block, Direction.BOTTOM);
 
-        if (block.type === BlockType.DIRT && adjacentBlock.type === BlockType.DIRT) {
+        if (block.type === BlockType.DIRT && topBlock.type === BlockType.DIRT) {
             return 1;
+        } else if (block.type === BlockType.LEAVES && bottomBlock.type !== BlockType.AIR) {
+            return 10;
         }
 
         switch (block.type) {
             case BlockType.STONE:
                 return 5;
+            case BlockType.MOSSY_STONE:
+                return 6;
             case BlockType.SNOW:
                 return 6;
             case BlockType.TREE:
-                return 7;
-            case BlockType.LEAVES:
-                return 8;
-            case BlockType.DIRT:
-                if (direction === Direction.TOP) {
-                    return 0;
+                if (direction === Direction.TOP || direction === Direction.BOTTOM) {
+                    return 8;
                 } else {
-                    return 2;
+                    return 7;
                 }
+            case BlockType.LEAVES:
+                if (direction === Direction.TOP || direction === Direction.BOTTOM) {
+                    return 10;
+                } else {
+                    return 9;
+                }
+            case BlockType.DIRT:
+                return 0;
+            case BlockType.DRY_DIRT:
+                return 2;
             case BlockType.WATER:
                 return 3;
             case BlockType.SAND:
                 return 4;
+            case BlockType.MOSS:
+                if (direction === Direction.TOP || direction === Direction.BOTTOM) {
+                    return 11;
+                } else {
+                    return 12;
+                }
+            case BlockType.SMALL_STONE:
+                return 13;
+            case BlockType.TWIG:
+                return 14;
             default:
-                throw 'Unknown or invalid block type';
+                throw 'Unknown or invalid block type' + block.type;
         }
     }
 

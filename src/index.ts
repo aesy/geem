@@ -24,7 +24,9 @@ const worldCenter = drawDistance * Chunk.SIZE / 2;
 const renderSystem = new RenderSystem();
 
 const game = new Game(renderSystem.renderer);
-game.addSystem(renderSystem);
+game.addEntity(new DirectionalLight(worldCenter * 2, 400, worldCenter * 2, 1));
+game.addEntity(new AmbientLight(0.2));
+game.addEntity(new Player());
 game.addSystem(new ControlSystem(world));
 game.addSystem(new GravitySystem(world));
 game.addSystem(new VelocitySystem(world));
@@ -34,9 +36,6 @@ game.addSystem(new DigSystem(world));
 game.addSystem(new ChunkUnloader(world, drawDistance + 1));
 game.addSystem(new ChunkLoader(world, drawDistance));
 game.addSystem(new ChunkUpdater(world));
-game.addEntity(new DirectionalLight(worldCenter * 2, 400, worldCenter * 2, 1));
-game.addEntity(new AmbientLight(0.2));
-game.addEntity(new Player());
 game.addSystem(renderSystem);
 
 game.start();

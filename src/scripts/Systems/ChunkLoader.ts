@@ -5,14 +5,14 @@ import { ChunkUnloaded } from '../Event/ChunkUnloaded';
 import { Game } from '../Game/Game';
 import { Coordinate3 } from '../Util/Math';
 import { Comparator } from '../Util/Type';
-import { ArchipelagoChunkGenerator } from '../WorldGen/ArchipelagoChunkGenerator';
+import { BorrealForestChunkGenerator } from '../WorldGen/BorrealForestChunkGenerator';
 import { Chunk } from '../WorldGen/Chunk';
 import { ChunkGeneratorScheduler, OffloadedChunkDataGeneratorScheduler } from '../WorldGen/ChunkGeneratorScheduler';
 import { World, WorldUtils } from '../WorldGen/World';
 import { System } from './System';
 
 const scheduler: ChunkGeneratorScheduler = new OffloadedChunkDataGeneratorScheduler(
-    ArchipelagoChunkGenerator, [], -1, 5);
+    BorrealForestChunkGenerator, [], -1, 5);
 
 export class ChunkLoader extends System {
     private readonly generated: Set<Chunk>;

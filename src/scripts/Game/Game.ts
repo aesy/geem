@@ -70,6 +70,11 @@ export class Game {
         let updates = 0;
         let dt = (currentTimestamp - this.lastTimestamp) / 1000;
 
+        if (dt < Game.TIME_STEP) {
+            requestAnimationFrame(this.update.bind(this));
+            return;
+        }
+
         this.fps = Game.FPS_DECAY * (1 / dt) + (1 - Game.FPS_DECAY) * this.fps;
 
         while (this.running && dt >= Game.TIME_STEP) {

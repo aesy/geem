@@ -10,6 +10,7 @@ export class Game {
     private static readonly TIME_STEP = 1 / 60;
     private static readonly MAX_UPDATES_PER_FRAME = 100;
     private static readonly FPS_DECAY = 0.1;
+    private static readonly FPS_CAP = -1; // -1 === uncapped
 
     public readonly events = new EventBus();
     public readonly camera: PerspectiveCamera;
@@ -68,6 +69,11 @@ export class Game {
     }
 
     public update(currentTimestamp: number): void {
+        if (Game.FPS_CAP > 0 && currentTimestamp < this.lastTimestamp + 1 / Game.FPS_CAP * 1000) {
+            requestAnimationFrame(this.update.bind(this));
+            return;
+        }
+
         let updates = 0;
         let dt = (currentTimestamp - this.lastTimestamp) / 1000;
 

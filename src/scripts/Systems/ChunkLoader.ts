@@ -1,7 +1,7 @@
-import { Object3D } from 'three';
 import { Entity } from '../Entities/Entity';
 import { Player } from '../Entities/Player';
 import { ChunkLoaded } from '../Event/ChunkLoaded';
+import { ChunkUnloaded } from '../Event/ChunkUnloaded';
 import { Game } from '../Game/Game';
 import { Coordinate3 } from '../Util/Math';
 import { Comparator } from '../Util/Type';
@@ -27,12 +27,20 @@ export class ChunkLoader extends System {
     }
 
     public appliesTo(entity: Entity): boolean {
-        return entity.hasComponents(Player, Object3D);
+        return entity instanceof Player;
     }
 
-    // TODO listen to unload events and clear from generated
+    public initialize(game: Game): void {
+        game.events.register(ChunkUnloaded, (event: ChunkUnloaded) => {
+            this.generated.delete(event.chunk);
+        });
+    }
 
     public update(dt: number, entities: Entity[], game: Game): void {
+        if (!entities.length) {
+            return;
+        }
+
         // TODO only run whenever player has moved x amount of blocks
         // TODO load based on player rather than camera
         const cameraPosition = WorldUtils.worldToChunk(game.camera.position);
@@ -66,11 +74,26 @@ export class ChunkLoader extends System {
 
     private comparator(position: Coordinate3): Comparator<Chunk> {
         return (chunk1: Chunk, chunk2: Chunk): number => {
-            return ChunkLoader.distanceSquared(chunk1, position) - ChunkLoader.distanceSquared(chunk2, position);
+            const diff = ChunkLoader.distance(chunk1, position) - ChunkLoader.distance(chunk2, position);
+
+            // If the difference in distance is large, prioritize the closest one
+            if (diff > 2 || diff < -2) {
+                return diff;
+            }
+
+            // Prioritize close chunks on the same y level
+            if (chunk1.y === position.y) {
+                return -1;
+            } else if (chunk2.y === position.y) {
+                return 1;
+            }
+
+            // Otherwise prioritize closest
+            return diff;
         };
     }
 
-    private static distanceSquared(pos1: Coordinate3, pos2: Coordinate3): number {
-        return Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2) + Math.pow(pos1.z - pos2.z, 2);
+    private static distance(pos1: Coordinate3, pos2: Coordinate3): number {
+        return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2) + Math.pow(pos1.z - pos2.z, 2));
     }
 }

@@ -62,6 +62,7 @@ export class Game {
     }
 
     public stop(): void {
+        this.fps = 1 / Game.TIME_STEP;
         this.lastTimestamp = 0;
         this.running = false;
     }

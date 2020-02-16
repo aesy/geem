@@ -7,6 +7,9 @@ import { EventBus } from '../Event/EventBus';
 import { System } from '../Systems/System';
 
 export class Game {
+    private static readonly TIME_STEP = 1 / 60;
+    private static readonly MAX_UPDATES_PER_FRAME = 100;
+
     public readonly events = new EventBus();
     public readonly camera: PerspectiveCamera;
     public readonly controls: OrbitControls;
@@ -19,7 +22,6 @@ export class Game {
         private readonly renderer: WebGLRenderer
     ) {
         const camera = new PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 1000);
-        // const camera = new OrthographicCamera(innerWidth / -10, innerWidth / 10, innerHeight / 10, innerHeight / -10, 0, 1000);
         const controls = new OrbitControls(camera, renderer.domElement);
 
         addEventListener('resize', this.onResize.bind(this));
@@ -48,19 +50,42 @@ export class Game {
     }
 
     public start(): void {
-        requestAnimationFrame(this.update.bind(this));
+        if (!this.running) {
+            this.running = true;
+
+            requestAnimationFrame(this.update.bind(this));
+        }
+    }
+
+    public stop(): void {
+        this.lastTimestamp = 0;
+        this.running = false;
     }
 
     public update(currentTimestamp: number): void {
-        const dt = (currentTimestamp - this.lastTimestamp) / 1000;
-        this.lastTimestamp = currentTimestamp;
-        this.controls.update();
+        let updates = 0;
+        let dt = (currentTimestamp - this.lastTimestamp) / 1000;
 
-        for (const system of this.systems) {
-            const filteredEntities = this.entities.filter(system.appliesTo);
+        while (dt >= Game.TIME_STEP) {
+            this.controls.update();
 
-            system.update(dt, filteredEntities, this);
+            for (const system of this.systems) {
+                const filteredEntities = this.entities.filter(system.appliesTo);
+
+                system.update(Game.TIME_STEP, filteredEntities, this);
+            }
+
+            dt -= Game.TIME_STEP;
+            updates++;
+
+            if (updates >= Game.MAX_UPDATES_PER_FRAME) {
+                console.error('Update loop can\'t keep up!');
+                this.lastTimestamp = 0;
+                break;
+            }
         }
+
+        this.lastTimestamp = currentTimestamp;
 
         requestAnimationFrame(this.update.bind(this));
     }
@@ -70,12 +95,6 @@ export class Game {
 
         this.renderer.setSize(innerWidth, innerHeight);
         this.camera.aspect = innerWidth / innerHeight;
-
-        // this.camera.left = innerWidth / -10;
-        // this.camera.right = innerWidth / 10;
-        // this.camera.top = innerHeight / 10;
-        // this.camera.bottom = innerHeight / -10;
-
         this.camera.updateProjectionMatrix();
     }
 }

@@ -21,6 +21,7 @@ export class InstantChunkDataGeneratorScheduler implements ChunkGeneratorSchedul
 
 export class AsyncChunkDataGeneratorScheduler implements ChunkGeneratorScheduler {
     private readonly deferred: Map<Chunk, Deferred<ChunkData>>;
+    private readonly toBeStarted: Set<Chunk>;
     private running: number;
 
     public constructor(
@@ -29,6 +30,7 @@ export class AsyncChunkDataGeneratorScheduler implements ChunkGeneratorScheduler
         private readonly concurrencyLimit: number = 1
     ) {
         this.deferred = new Map();
+        this.toBeStarted = new Set();
         this.running = 0;
     }
 
@@ -46,6 +48,8 @@ export class AsyncChunkDataGeneratorScheduler implements ChunkGeneratorScheduler
             this.deferred.set(chunk, deferred);
         }
 
+        this.toBeStarted.add(chunk);
+
         this.next();
 
         return deferred.promise.then(data => {
@@ -56,18 +60,20 @@ export class AsyncChunkDataGeneratorScheduler implements ChunkGeneratorScheduler
     }
 
     private next(): void {
-        for (const [ chunk, deferred ] of this.deferred) {
+        for (const chunk of this.toBeStarted) {
             if (this.running >= this.concurrencyLimit) {
                 return;
             }
 
             this.running++;
+            this.toBeStarted.delete(chunk);
 
             setTimeout(() => {
                 this.chunkGenerator.generateChunk(chunk);
                 this.deferred.delete(chunk);
                 this.running--;
 
+                const deferred = this.deferred.get(chunk)!;
                 deferred.resolve(chunk.data);
             }, 0);
         }
@@ -77,6 +83,7 @@ export class AsyncChunkDataGeneratorScheduler implements ChunkGeneratorScheduler
 export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorScheduler {
     private readonly worker: Worker;
     private readonly deferred: Map<Chunk, Deferred<ChunkData>>;
+    private readonly toBeStarted: Set<Chunk>;
     private running: number;
 
     public constructor(
@@ -89,6 +96,7 @@ export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorSched
             { name: 'ChunkWorker', type: 'module' });
         this.worker.onmessage = this.onNewChunk.bind(this);
         this.deferred = new Map();
+        this.toBeStarted = new Set();
         this.running = 0;
     }
 
@@ -114,18 +122,20 @@ export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorSched
             this.deferred.set(chunk, deferred);
         }
 
+        this.toBeStarted.add(chunk);
         this.next();
 
         return deferred.promise;
     }
 
     private next(): void {
-        for (const chunk of this.deferred.keys()) {
+        for (const chunk of this.toBeStarted) {
             if (this.running >= this.concurrencyLimit) {
                 return;
             }
 
             this.running++;
+            this.toBeStarted.delete(chunk);
             this.worker.postMessage({
                 x: chunk.x,
                 y: chunk.y,
@@ -143,7 +153,6 @@ export class OffloadedChunkDataGeneratorScheduler implements ChunkGeneratorSched
         const chunk = this.findChunk({ x, y, z });
 
         if (!chunk) {
-            debugger;
             return;
         }
 

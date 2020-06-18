@@ -1,9 +1,13 @@
-import { PerspectiveCamera, WebGLRenderer } from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { mat4 } from 'gl-matrix';
+import { ChunkMesh } from '../Entities/ChunkMesh';
 import { Entity } from '../Entities/Entity';
 import { EntityAdded } from '../Event/EntityAdded';
 import { EntityRemoved } from '../Event/EntityRemoved';
 import { EventBus } from '../Event/EventBus';
+import { Camera, PerspectiveCamera } from '../Renderer/Camera';
+import { Direction } from '../Renderer/Direction';
+import { Mesh, MeshBuffer } from '../Renderer/Mesh';
+import { Renderer } from '../Renderer/Renderer';
 import { System } from '../Systems/System';
 
 export class Game {
@@ -13,27 +17,31 @@ export class Game {
     private static readonly FPS_CAP = -1; // -1 === uncapped
 
     public readonly events = new EventBus();
-    public readonly camera: PerspectiveCamera;
-    public readonly controls: OrbitControls;
     public fps = 1 / Game.TIME_STEP;
 
     private readonly entities: Entity[] = [];
     private readonly systems: System[] = [];
+    private readonly meshes: Mesh[] = [];
     private animationFrameId: number | null = null;
     private running = false;
     private lastTimestamp = 0;
+    private camera: PerspectiveCamera;
 
     public constructor(
-        private readonly renderer: WebGLRenderer
+        private readonly renderer: Renderer
     ) {
-        const camera = new PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 1000);
-        const controls = new OrbitControls(camera, renderer.domElement);
+        this.camera = new PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 1000);
 
         addEventListener('visibilitychange', this.onVisibilityChange.bind(this));
         addEventListener('resize', this.onResize.bind(this));
+    }
 
+    public getActiveCamera(): PerspectiveCamera {
+        return this.camera;
+    }
+
+    public setActiveCamera(camera: PerspectiveCamera): void {
         this.camera = camera;
-        this.controls = controls;
     }
 
     public addSystem(system: System): void {
@@ -44,6 +52,10 @@ export class Game {
     public addEntity(entity: Entity): void {
         this.entities.push(entity);
         this.events.emit(new EntityAdded(entity));
+
+        if (entity instanceof ChunkMesh) {
+            this.meshes.push(entity.mesh);
+        }
     }
 
     public removeEntity(entity: Entity): void {
@@ -99,7 +111,9 @@ export class Game {
         this.fps = Game.FPS_DECAY * (1 / dt) + (1 - Game.FPS_DECAY) * this.fps;
 
         while (this.running && dt >= Game.TIME_STEP) {
-            this.controls.update();
+            const x = 50 * Math.cos(currentTimestamp / 10000);
+            const z = 50 * Math.sin(currentTimestamp / 10000);
+            mat4.lookAt(this.camera.transform.matrix, [ x, 50, z ], [ 0, 30, 0 ], Direction.UP);
 
             for (const system of this.systems) {
                 const filteredEntities = this.entities.filter(system.appliesTo);
@@ -119,17 +133,15 @@ export class Game {
 
         this.lastTimestamp = currentTimestamp;
 
+        this.renderer.render(this.camera, this.meshes);
+
         if (this.running) {
             this.animationFrameId = requestAnimationFrame(this.update.bind(this));
         }
     }
 
     private onResize(): void {
-        const { innerHeight, innerWidth } = window;
-
-        this.renderer.setSize(innerWidth, innerHeight);
-        this.camera.aspect = innerWidth / innerHeight;
-        this.camera.updateProjectionMatrix();
+        this.camera.setAspectRatio(innerWidth / innerHeight);
     }
 
     private onVisibilityChange(): void {

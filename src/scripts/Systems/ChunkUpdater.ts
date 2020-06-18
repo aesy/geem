@@ -1,19 +1,12 @@
 import textureAtlas from '../../assets/images/textureAtlas.png';
-import {
-    BufferAttribute,
-    BufferGeometry,
-    Material,
-    MeshLambertMaterial,
-    NearestFilter,
-    RepeatWrapping,
-    TextureLoader
-} from 'three';
 import { ChunkMesh } from '../Entities/ChunkMesh';
 import { Entity } from '../Entities/Entity';
 import { BlockRemoved } from '../Event/BlockRemoved';
 import { ChunkLoaded } from '../Event/ChunkLoaded';
 import { ChunkUnloaded } from '../Event/ChunkUnloaded';
 import { Game } from '../Game/Game';
+import { TextureMaterial } from '../Renderer/Material';
+import { Mesh, MeshBuffer } from '../Renderer/Mesh';
 import { MeshData } from '../Util/Math';
 import { BlockType } from '../WorldGen/Block';
 import { Chunk } from '../WorldGen/Chunk';
@@ -26,14 +19,7 @@ import { CullingChunkMesher } from '../WorldGen/CullingChunkMesher';
 import { World, WorldUtils } from '../WorldGen/World';
 import { System } from './System';
 
-const loader = new TextureLoader();
-const texture = loader.load(textureAtlas);
-texture.wrapS = RepeatWrapping;
-texture.wrapT = RepeatWrapping;
-texture.magFilter = NearestFilter;
-texture.minFilter = NearestFilter;
-const opaqueMaterial = new MeshLambertMaterial({ map: texture });
-const transparentMaterial = new MeshLambertMaterial({ map: texture, transparent: true });
+const material = new TextureMaterial(textureAtlas);
 
 const opaqueBlockTypes = [
     BlockType.DIRT,
@@ -186,16 +172,9 @@ export class ChunkUpdater extends System {
 
             for (let i = 0; i < data.length; i++) {
                 const datum = data[ i ];
-                const geometry = ChunkUpdater.createMesh(datum);
-                let material: Material;
+                const mesh = ChunkUpdater.createMesh(datum);
+                const newEntity = new ChunkMesh(chunk, mesh);
 
-                if (i === 0) {
-                    material = opaqueMaterial;
-                } else {
-                    material = transparentMaterial;
-                }
-
-                const newEntity = new ChunkMesh(chunk, geometry, material);
                 game.addEntity(newEntity);
                 entities.push(newEntity);
                 this.chunkEntities.set(chunk, entities);
@@ -203,13 +182,7 @@ export class ChunkUpdater extends System {
         };
     }
 
-    private static createMesh(data: MeshData): BufferGeometry {
-        const geometry = new BufferGeometry();
-        geometry.setAttribute('position', new BufferAttribute(new Float32Array(data.vertices), 3));
-        geometry.setAttribute('normal', new BufferAttribute(new Float32Array(data.normals), 3));
-        geometry.setAttribute('uv', new BufferAttribute(new Float32Array(data.uvs), 2));
-        geometry.setIndex(data.indices);
-
-        return geometry;
+    private static createMesh(data: MeshData): Mesh {
+        return new MeshBuffer(material, data.vertices, data.normals, data.uvs, data.indices);
     }
 }

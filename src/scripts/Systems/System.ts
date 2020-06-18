@@ -14,3 +14,11 @@ export class System {
         throw new Error('Not implemented');
     }
 }
+
+/*
+ export interface System {
+    initialize(game: Game): void;
+    dispose(): void;
+    update(dt: number): void;
+}
+*/

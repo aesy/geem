@@ -1,3 +1,4 @@
+import { mat4, vec3, vec4 } from 'gl-matrix';
 import { Entity } from '../Entities/Entity';
 import { Player } from '../Entities/Player';
 import { ChunkLoaded } from '../Event/ChunkLoaded';
@@ -55,7 +56,9 @@ export class ChunkLoader extends System {
 
         // TODO only run whenever player has moved x amount of blocks
         // TODO load based on player rather than camera
-        const cameraPosition = WorldUtils.worldToChunk(game.camera.position);
+        const vec = vec4.transformMat4(vec4.create(), vec4.create(), game.getActiveCamera().transform.matrix);
+        const pos = { x: vec[ 0 ], y: vec[ 1 ], z: vec[ 2 ] };
+        const cameraPosition = WorldUtils.worldToChunk(pos);
         const toBeGenerated: Chunk[] = [];
 
         for (let x = cameraPosition.x - this.drawDistance; x < cameraPosition.x + this.drawDistance + 1; x++) {

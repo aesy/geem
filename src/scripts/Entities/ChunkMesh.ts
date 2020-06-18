@@ -1,20 +1,15 @@
-import { BufferGeometry, Material, Mesh } from 'three';
+import { Mesh } from '../Renderer/Mesh';
 import { Chunk } from '../WorldGen/Chunk';
 import { Entity } from './Entity';
 
 export class ChunkMesh extends Entity {
     public constructor(
         public readonly chunk: Chunk,
-        geometry: BufferGeometry,
-        material: Material
+        public readonly mesh: Mesh
     ) {
         super();
 
-        const mesh = new Mesh(geometry, material);
-        mesh.position.set(chunk.x * Chunk.SIZE, chunk.y * Chunk.SIZE, chunk.z * Chunk.SIZE);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-
+        mesh.transform.translate([ chunk.x * Chunk.SIZE, chunk.y * Chunk.SIZE, chunk.z * Chunk.SIZE ]);
         this.addComponent(mesh);
     }
 }

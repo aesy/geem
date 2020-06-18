@@ -141,15 +141,11 @@ export class CullingChunkMesher implements ChunkMesher {
                                     vertices.push(x + corner.x, y + corner.y, z + corner.z);
                                 }
 
-                             
-                    
-
                                 normals.push(face.normal.x, face.normal.y, face.normal.z);
 
-                                // TODO double check the second argument is correct
                                 uvs.push(
                                     (textureIndex + corner.u) * tileWidth / textureWidth,
-                                    1 - (1 - corner.v) * tileWidth / textureWidth);
+                                    (1 - corner.v) * tileWidth / textureWidth);
                             }
 
                             indices.push(

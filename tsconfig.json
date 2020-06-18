@@ -6,7 +6,8 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "sourceMap": true,
-        "downlevelIteration": true
+        "downlevelIteration": true,
+        "esModuleInterop": true
     },
     "include": [
         "src"

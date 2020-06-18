@@ -1,4 +1,3 @@
-import { Object3D, Vector3, Box3 } from 'three';
 import { Entity } from '../Entities/Entity';
 import { System } from './System';
 import { Game } from '../Game/Game';
@@ -47,55 +46,55 @@ export class ControlSystem extends System {
         document.addEventListener('keyup', this.onKeyUp.bind(this));
     }
 
-    public appliesTo(entity: Entity): boolean {
-        return entity.hasComponents(Controlable, Movable, Object3D);
-    }
-    
+    // public appliesTo(entity: Entity): boolean {
+    //     return entity.hasComponents(Controlable, Movable, Object3D);
+    // }
+
     public update(dt: number, entities: Entity[], game: Game): void {
-        const vector = game.camera.getWorldDirection(new Vector3());
-        vector.y = 0;
-        
+        // const vector = game.camera.getWorldDirection(new Vector3());
+        // vector.y = 0;
+
         for (const entity of entities) {
-            const object = entity.getComponent(Object3D);
-            const velocity = entity.getComponent(Movable).velocity;
-            const direction = new Vector3();
-            
-            const boundingBox = new Box3().setFromObject(object);
-            const size = boundingBox.getSize(new Vector3());
-
-            const positionUnder = {
-                x: Math.floor(object.position.x),
-                y: Math.floor(object.position.y - (size.y / 2) - 1),
-                z: Math.floor(object.position.z)
-            };
-            
-            const block = this.world.getBlock(positionUnder);
-            
-            velocity.x = 0;
-            velocity.z = 0;
-            
-            if (this.keys.has('w')) {
-                direction.add(vector);
-            }
-            if (this.keys.has('s')) {
-                direction.add(vector).negate();  
-            } 
-            if (this.keys.has('a')) {
-                direction.add(vector.clone().applyAxisAngle(new Vector3(0, 1, 0), Math.PI / 2));
-            } 
-            if (this.keys.has('d')) {
-                direction.add(vector.clone().applyAxisAngle(new Vector3(0, 1, 0), Math.PI / 2).negate());
-            } 
-
-            direction.normalize().multiplyScalar(10);
-
-            if (BlockUtils.isOpaque(block) && boundingBox.min.y === positionUnder.y + 1) {
-                if (this.keys.has('space')) {
-                    direction.y = 10;
-                }
-            }
-
-            velocity.add(direction);
+            // const object = entity.getComponent(Object3D);
+            // const velocity = entity.getComponent(Movable).velocity;
+            // const direction = new Vector3();
+            //
+            // const boundingBox = new Box3().setFromObject(object);
+            // const size = boundingBox.getSize(new Vector3());
+            //
+            // const positionUnder = {
+            //     x: Math.floor(object.position.x),
+            //     y: Math.floor(object.position.y - (size.y / 2) - 1),
+            //     z: Math.floor(object.position.z)
+            // };
+            //
+            // const block = this.world.getBlock(positionUnder);
+            //
+            // velocity.x = 0;
+            // velocity.z = 0;
+            //
+            // if (this.keys.has('w')) {
+            //     direction.add(vector);
+            // }
+            // if (this.keys.has('s')) {
+            //     direction.add(vector).negate();
+            // }
+            // if (this.keys.has('a')) {
+            //     direction.add(vector.clone().applyAxisAngle(new Vector3(0, 1, 0), Math.PI / 2));
+            // }
+            // if (this.keys.has('d')) {
+            //     direction.add(vector.clone().applyAxisAngle(new Vector3(0, 1, 0), Math.PI / 2).negate());
+            // }
+            //
+            // direction.normalize().multiplyScalar(10);
+            //
+            // if (BlockUtils.isOpaque(block) && boundingBox.min.y === positionUnder.y + 1) {
+            //     if (this.keys.has('space')) {
+            //         direction.y = 10;
+            //     }
+            // }
+            //
+            // velocity.add(direction);
         }
     }
 }

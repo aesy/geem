@@ -1,4 +1,3 @@
-import { Object3D, Vector3 } from 'three';
 import { Movable } from '../Components/Movable';
 import { Entity } from '../Entities/Entity';
 import { System } from './System';
@@ -10,16 +9,16 @@ export class VelocitySystem extends System {
         super();
     }
 
-    public appliesTo(entity: Entity): boolean {
-        return entity.hasComponents(Movable, Object3D);
-    }
+    // public appliesTo(entity: Entity): boolean {
+    //     return entity.hasComponents(Movable, Object3D);
+    // }
 
     public update(dt: number, entities: Entity[], game: Game): void {
         for (const entity of entities) {
-            const object = entity.getComponent(Object3D);
-            const velocity = entity.getComponent(Movable).velocity;
-            
-            object.position.add(velocity.clone().multiplyScalar(dt)); 
+            // const object = entity.getComponent(Object3D);
+            // const velocity = entity.getComponent(Movable).velocity;
+
+            // object.position.add(velocity.clone().multiplyScalar(dt));
         }
     }
 }

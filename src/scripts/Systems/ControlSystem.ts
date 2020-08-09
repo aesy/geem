@@ -23,6 +23,8 @@ export class ControlSystem extends System {
             this.keys.add('a');
         } else if (event.keyCode === 68) {
             this.keys.add('d');
+        } else if (event.keyCode === 70) {
+          this.keys.add('f');
         } else if (event.keyCode === 32) {
             this.keys.add('space');
         }
@@ -37,6 +39,8 @@ export class ControlSystem extends System {
             this.keys.delete('a');
         } else if (event.keyCode === 68) {
             this.keys.delete('d');
+        } else if (event.keyCode === 70) {
+            this.keys.delete('f');
         } else if (event.keyCode === 32) {
             this.keys.delete('space');
         }

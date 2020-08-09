@@ -33,7 +33,7 @@ export class RenderSystem extends System {
         this.scene = scene;
         this.renderer = renderer;
     }
-
+    
     public initialize(game: Game): void {
         game.events.register(EntityRemoved, (event: EntityRemoved) => {
             const entity = event.entity;

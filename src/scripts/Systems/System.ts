@@ -6,7 +6,7 @@ export class System {
         return false;
     }
 
-    public initialize(game: Game): void {
+    public initialize(game: Game, entities: Entity[]): void {
         // Intentionally left empty
     }
 

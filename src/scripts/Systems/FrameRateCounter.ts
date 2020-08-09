@@ -6,6 +6,7 @@ export class FrameRateCounter extends System {
     private static readonly INTERVAL_SECONDS = 0.1;
 
     private readonly element: HTMLElement;
+    private readonly crosshair: HTMLElement;
     private elapsedTime = 0;
 
     public constructor() {
@@ -22,7 +23,19 @@ export class FrameRateCounter extends System {
         this.element.style.fontSize = '15px';
         this.element.innerText = 'INF FPS';
 
+        this.crosshair = document.createElement('div');
+        this.crosshair.style.position = 'absolute';
+        this.crosshair.style.height = '10px';
+        this.crosshair.style.width = '10px';
+        this.crosshair.style.left = '50%';
+        this.crosshair.style.top = '50%';
+        this.crosshair.style.backgroundColor = 'rgb(0, 0, 0, 0.8)';
+        this.crosshair.style.transform = 'translateY(-50%)'
+
+
+
         document.body.appendChild(this.element);
+        document.body.appendChild(this.crosshair);
     }
 
     public update(dt: number, entities: Entity[], game: Game): void {

@@ -37,9 +37,10 @@ const transparentMaterial = new MeshLambertMaterial({ map: texture, transparent:
 
 const opaqueBlockTypes = [
     BlockType.DIRT,
+    BlockType.MOSSY_DIRT,
+    BlockType.DRY_DIRT,
     BlockType.SAND,
     BlockType.TREE,
-    BlockType.DRY_DIRT,
     BlockType.MOSSY_STONE,
     BlockType.STONE,
     BlockType.SNOW,
@@ -51,6 +52,9 @@ const transparentBlockTypes = [
     BlockType.MOSS,
     BlockType.SMALL_STONE,
     BlockType.TWIG,
+    BlockType.GRASS,
+    BlockType.BLUEBERRIES,
+    BlockType.LINGONBERRIES
 ];
 
 const instantOpaqueScheduler: ChunkMeshGeneratorScheduler = new InstantChunkMeshGeneratorScheduler(

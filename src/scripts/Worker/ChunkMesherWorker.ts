@@ -18,6 +18,7 @@ const mesher: ChunkMesher = new CullingChunkMesher([
     BlockType.MOSS,
     BlockType.SMALL_STONE,
     BlockType.TWIG,
+    BlockType.GRASS,
 ]);
 
 const chunkMeshers: { [ key: string ]: Constructor<ChunkMesher> } = {

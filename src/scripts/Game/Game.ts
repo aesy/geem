@@ -1,5 +1,5 @@
 import { PerspectiveCamera, WebGLRenderer } from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
 import { Entity } from '../Entities/Entity';
 import { EntityAdded } from '../Event/EntityAdded';
 import { EntityRemoved } from '../Event/EntityRemoved';
@@ -7,14 +7,14 @@ import { EventBus } from '../Event/EventBus';
 import { System } from '../Systems/System';
 
 export class Game {
-    private static readonly TIME_STEP = 1 / 60;
-    private static readonly MAX_UPDATES_PER_FRAME = 100;
+    private static readonly TIME_STEP = 1 / 144;
+    private static readonly MAX_UPDATES_PER_FRAME = 10;
     private static readonly FPS_DECAY = 0.1;
     private static readonly FPS_CAP = -1; // -1 === uncapped
 
     public readonly events = new EventBus();
     public readonly camera: PerspectiveCamera;
-    public readonly controls: OrbitControls;
+    public readonly pointerControls: PointerLockControls;
     public fps = 1 / Game.TIME_STEP;
 
     private readonly entities: Entity[] = [];
@@ -24,21 +24,27 @@ export class Game {
     private lastTimestamp = 0;
 
     public constructor(
-        private readonly renderer: WebGLRenderer
+        private readonly renderer: WebGLRenderer,
+        public readonly io: any
     ) {
         const camera = new PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 1000);
-        const controls = new OrbitControls(camera, renderer.domElement);
+        const controls = new PointerLockControls(camera, renderer.domElement);
 
         addEventListener('visibilitychange', this.onVisibilityChange.bind(this));
         addEventListener('resize', this.onResize.bind(this));
 
         this.camera = camera;
-        this.controls = controls;
+        this.pointerControls = controls;
+
+        document.addEventListener('click', () => {
+            this.pointerControls.lock();
+        });
     }
 
     public addSystem(system: System): void {
         this.systems.push(system);
-        system.initialize(this);
+        const filteredEntities = this.entities.filter(system.appliesTo);
+        system.initialize(this, filteredEntities);
     }
 
     public addEntity(entity: Entity): void {
@@ -99,7 +105,6 @@ export class Game {
         this.fps = Game.FPS_DECAY * (1 / dt) + (1 - Game.FPS_DECAY) * this.fps;
 
         while (this.running && dt >= Game.TIME_STEP) {
-            this.controls.update();
 
             for (const system of this.systems) {
                 const filteredEntities = this.entities.filter(system.appliesTo);
@@ -111,7 +116,7 @@ export class Game {
             updates++;
 
             if (updates >= Game.MAX_UPDATES_PER_FRAME) {
-                console.error('Update loop can\'t keep up!');
+                // console.error('Update loop can\'t keep up!');
                 this.lastTimestamp = 0;
                 break;
             }

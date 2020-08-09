@@ -2,93 +2,10 @@ import { Direction } from '../Util/Direction';
 import { Coordinate3, MeshData } from '../Util/Math';
 import { Block, BlockType, BlockUtils, PositionedBlock } from './Block';
 import { Chunk, ChunkMesher } from './Chunk';
+import { BlockMesher, StandardBlockMesher, WaterBlockMesher, CrossBlockMesher } from './BlockMesher';
 
 const tileWidth = 16;
 const textureWidth = 256;
-
-const Cube = {
-    Face: {
-        LEFT: {
-            corners: [
-                { x: 0, y: 1, z: 0, u: 0.01, v: 0.99 },
-                { x: 0, y: 0, z: 0, u: 0.01, v: 0.01 },
-                { x: 0, y: 1, z: 1, u: 0.99, v: 0.99 },
-                { x: 0, y: 0, z: 1, u: 0.99, v: 0.01 }
-            ],
-            normal: Direction.LEFT
-        },
-        RIGHT: {
-            corners: [
-                { x: 1, y: 1, z: 1, u: 0.01, v: 0.99 },
-                { x: 1, y: 0, z: 1, u: 0.01, v: 0.01 },
-                { x: 1, y: 1, z: 0, u: 0.99, v: 0.99 },
-                { x: 1, y: 0, z: 0, u: 0.99, v: 0.01 }
-            ],
-            normal: Direction.RIGHT
-        },
-        BOTTOM: {
-            corners: [
-                { x: 1, y: 0, z: 1, u: 0.99, v: 0.01 },
-                { x: 0, y: 0, z: 1, u: 0.01, v: 0.01 },
-                { x: 1, y: 0, z: 0, u: 0.99, v: 0.99 },
-                { x: 0, y: 0, z: 0, u: 0.01, v: 0.99 }
-            ],
-            normal: Direction.BOTTOM
-        },
-        TOP: {
-            corners: [
-                { x: 0, y: 1, z: 1, u: 0.99, v: 0.99 },
-                { x: 1, y: 1, z: 1, u: 0.01, v: 0.99 },
-                { x: 0, y: 1, z: 0, u: 0.99, v: 0.01 },
-                { x: 1, y: 1, z: 0, u: 0.01, v: 0.01 }
-            ],
-            normal: Direction.TOP
-        },
-        BACK: {
-            corners: [
-                { x: 1, y: 0, z: 0, u: 0.01, v: 0.01 },
-                { x: 0, y: 0, z: 0, u: 0.99, v: 0.01 },
-                { x: 1, y: 1, z: 0, u: 0.01, v: 0.99 },
-                { x: 0, y: 1, z: 0, u: 0.99, v: 0.99 }
-            ],
-            normal: Direction.BACK
-        },
-        FRONT: {
-            corners: [
-                { x: 0, y: 0, z: 1, u: 0.01, v: 0.01 },
-                { x: 1, y: 0, z: 1, u: 0.99, v: 0.01 },
-                { x: 0, y: 1, z: 1, u: 0.01, v: 0.99 },
-                { x: 1, y: 1, z: 1, u: 0.99, v: 0.99 }
-            ],
-            normal: Direction.FRONT
-        },
-
-        direction(direction: Coordinate3): any {
-            switch (direction) {
-                case Direction.LEFT:
-                    return Cube.Face.LEFT;
-                case Direction.RIGHT:
-                    return Cube.Face.RIGHT;
-                case Direction.BOTTOM:
-                    return Cube.Face.BOTTOM;
-                case Direction.TOP:
-                    return Cube.Face.TOP;
-                case Direction.BACK:
-                    return Cube.Face.BACK;
-                case Direction.FRONT:
-                    return Cube.Face.FRONT;
-                default:
-                    throw `Unknown direction: ${ direction }`;
-            }
-        },
-
-        all(): any[] {
-            return [
-                Cube.Face.LEFT, Cube.Face.RIGHT, Cube.Face.BOTTOM, Cube.Face.TOP, Cube.Face.BACK, Cube.Face.FRONT
-            ];
-        }
-    }
-};
 
 export class CullingChunkMesher implements ChunkMesher {
     public constructor(
@@ -114,54 +31,58 @@ export class CullingChunkMesher implements ChunkMesher {
                         continue;
                     }
 
-                    const topBlock = chunk.getBlock({ x: x + Direction.TOP.x, y: y + Direction.TOP.y, z: z + Direction.TOP.z });
-
                     for (const direction of Direction.all()) {
                         const neighbor = chunk.getBlock({ x: x + direction.x, y: y + direction.y, z: z + direction.z });
                         const neighborIsSameType = block.type === neighbor.type;
 
                         if (!BlockUtils.isOpaque(neighbor) && !neighborIsSameType) {
                             const index = vertices.length / 3;
-                            const face = Cube.Face.direction(direction);
                             const textureIndex = CullingChunkMesher.getTextureIndex(chunk, { x, y, z, type: block.type }, direction);
-
-                            for (const corner of face.corners) {
-                                if (block.type === BlockType.WATER && topBlock.type === BlockType.AIR) {
-                                    // HACK push water down a notch, it looks nice :-)
-                                    vertices.push(x + corner.x, y + corner.y - 0.2, z + corner.z);
-                                } else if (block.type === BlockType.LEAVES && direction === Direction.BOTTOM) {
-                                    vertices.push(x + corner.x, y + corner.y + 1/8, z + corner.z);
-                                } else if (block.type === BlockType.MOSS && direction === Direction.TOP){
-                                    vertices.push(x + corner.x, y + corner.y - 15/16, z + corner.z);
-                                } else if (block.type === BlockType.SMALL_STONE) {
-                                    vertices.push(x + corner.x, y + corner.y - 15/16, z + corner.z);
-                                } else if (block.type === BlockType.TWIG) {
-                                    vertices.push(x + corner.x, y + corner.y - 15/16, z + corner.z);
-                                } else {
-                                    vertices.push(x + corner.x, y + corner.y, z + corner.z);
+                            const mesher = CullingChunkMesher.getBlockMesher(block.type);
+                            let i = -1;
+                            let a = -1;
+                            vertices.push(...mesher.vertices.map(e => {
+                                i ++;
+                                switch (i % 3) {
+                                    case 0:
+                                        return e + x;
+                                    case 1:
+                                        return e + y;
+                                    case 2:
+                                        return e + z;
+                                    default:
+                                        throw 'ERROR BAJS';
                                 }
-
-                             
-                    
-
-                                normals.push(face.normal.x, face.normal.y, face.normal.z);
-
-                                // TODO double check the second argument is correct
-                                uvs.push(
-                                    (textureIndex + corner.u) * tileWidth / textureWidth,
-                                    1 - (1 - corner.v) * tileWidth / textureWidth);
-                            }
-
-                            indices.push(
-                                index, index + 1, index + 2,
-                                index + 2, index + 1, index + 3);
+                            }));
+                            normals.push(...mesher.normal);
+                            uvs.push(...mesher.uvs.map(e => {
+                                a ++;
+                                switch (a % 2) {
+                                    case 0:
+                                        return (textureIndex + e) * tileWidth / textureWidth;
+                                    case 1:
+                                        return 1 - (1 - e) * tileWidth / textureWidth;
+                                    default:
+                                        throw 'ERROR BAJS';
+                                }
+                            }));
+                            indices.push(...mesher.indices.map(e => e + index));
                         }
                     }
                 }
             }
         }
-
+        
         return { vertices, normals, uvs, indices };
+    }
+
+    private static getBlockMesher(type: BlockType): BlockMesher {
+        if (type === BlockType.WATER) {
+            return new WaterBlockMesher();
+        } else if (type === BlockType.GRASS || type === BlockType.MOSS || type === BlockType.BLUEBERRIES || type === BlockType.LINGONBERRIES) {
+            return new CrossBlockMesher();
+        } 
+        return new StandardBlockMesher();
     }
 
     private static getTextureIndex(chunk: Chunk, block: PositionedBlock, direction: Coordinate3): number {
@@ -171,46 +92,46 @@ export class CullingChunkMesher implements ChunkMesher {
         if (block.type === BlockType.DIRT && topBlock.type === BlockType.DIRT) {
             return 1;
         } else if (block.type === BlockType.LEAVES && bottomBlock.type !== BlockType.AIR) {
-            return 10;
+            return 11;
         }
 
         switch (block.type) {
-            case BlockType.STONE:
-                return 5;
-            case BlockType.MOSSY_STONE:
-                return 6;
-            case BlockType.SNOW:
-                return 6;
-            case BlockType.TREE:
-                if (direction === Direction.TOP || direction === Direction.BOTTOM) {
-                    return 8;
-                } else {
-                    return 7;
-                }
-            case BlockType.LEAVES:
-                if (direction === Direction.TOP || direction === Direction.BOTTOM) {
-                    return 10;
-                } else {
-                    return 9;
-                }
             case BlockType.DIRT:
                 return 0;
+            case BlockType.MOSSY_DIRT:
+                return 1;
             case BlockType.DRY_DIRT:
                 return 2;
             case BlockType.WATER:
                 return 3;
             case BlockType.SAND:
                 return 4;
-            case BlockType.MOSS:
+            case BlockType.STONE:
+                return 5;
+            case BlockType.MOSSY_STONE:
+                return 6;
+            case BlockType.SNOW:
+                return 7;
+            case BlockType.TREE:
+                if (direction === Direction.TOP || direction === Direction.BOTTOM) {
+                    return 9;
+                } else {
+                    return 8;
+                }
+            case BlockType.LEAVES:
                 if (direction === Direction.TOP || direction === Direction.BOTTOM) {
                     return 11;
                 } else {
-                    return 12;
+                    return 10;
                 }
-            case BlockType.SMALL_STONE:
+            case BlockType.MOSS: 
+                return 12;
+            case BlockType.GRASS:
                 return 13;
-            case BlockType.TWIG:
+            case BlockType.BLUEBERRIES:
                 return 14;
+            case BlockType.LINGONBERRIES:
+                return 15;
             default:
                 throw 'Unknown or invalid block type' + block.type;
         }

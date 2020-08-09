@@ -1,6 +1,6 @@
-import { BorrealForestChunkGenerator } from './BorrealForestChunkGenerator';
 import { BlockType } from './Block';
 import { CullingChunkMesher } from './CullingChunkMesher';
+import { BorrealForestChunkGenerator } from './BorrealForestChunkGenerator';
 
 const blockTypes = [
     BlockType.DIRT,

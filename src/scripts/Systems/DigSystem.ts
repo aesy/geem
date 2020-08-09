@@ -1,4 +1,4 @@
-import { Raycaster, Vector2 } from 'three';
+import { Raycaster, Vector2, Vector3 } from 'three';
 import { Entity } from '../Entities/Entity';
 import { BlockRemoved } from '../Event/BlockRemoved';
 import { Game } from '../Game/Game';
@@ -32,7 +32,8 @@ export class DigSystem extends System {
         }
 
         const raycaster = new Raycaster();
-        raycaster.setFromCamera(this.clicked, game.camera);
+        raycaster.set(game.pointerControls.getObject().position, game.pointerControls.getDirection(new Vector3()));
+        // raycaster.setFromCamera(this.clicked, game.camera);
         const intersection = this.raycast(raycaster.ray.origin, raycaster.ray.direction);
 
         if (intersection) {
